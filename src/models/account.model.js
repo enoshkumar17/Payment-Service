@@ -27,7 +27,8 @@ const accountSchema = new mongoose.Schema({
   }
 },{timestamps:true})
 
-accountSchema.methods.getBalance = async function(){
+accountSchema.methods.getBalance = async function(options = {}){
+  const aggregateOptions = options.session ? { session: options.session } : {};
   const balanceData = await Ledger.aggregate([
     {
       $match:{
@@ -63,7 +64,7 @@ accountSchema.methods.getBalance = async function(){
         balance:{$subtract:["$totalCredit","$totalDebit"]}
       }
     }
-    ])
+    ], aggregateOptions)
 
   return balanceData[0]?.balance ?? 0;
 }

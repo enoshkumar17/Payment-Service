@@ -20,9 +20,9 @@ const transactionSchema = new mongoose.Schema({
   status:{
     type:String,
     enum:{
-      values:['Failed','Completed','Pending','Reversed'],
-      message:"Payment status have can be Pending, Completed, Failed"},
-    default:'Pending'
+      values:['PENDING','PROCESSING','SUCCEEDED','FAILED','REVERSED'],
+      message:"Payment status must be PENDING, PROCESSING, SUCCEEDED, FAILED, or REVERSED"},
+    default:'PENDING'
   },
   idempotencyKey:{
     type:String,
