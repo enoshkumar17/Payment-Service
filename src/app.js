@@ -23,6 +23,20 @@ app.use(session({
 
 app.use(express.static(path.join(__dirname,"views")))
 
+// Dashboard root redirect and SPA routing
+app.get("/", (req, res) => {
+  res.redirect("/dashboard");
+});
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "dashboard", "index.html"));
+});
+
+app.get("/dashboard/:page", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "dashboard", "index.html"));
+});
+
+
 app.use(passport.initialize())
 
 app.use(passport.session())
@@ -32,6 +46,7 @@ app.use("/login",(req,res)=>{
   const filePath = path.join(__dirname,"views","login.html")
   res.sendFile(filePath)
 })
+
   
 app.get("/reset-password/:token", async(req,res)=>{
   const { token } = req.params
@@ -88,6 +103,7 @@ app.get("/reset-password/:token", async(req,res)=>{
 import authRouter from './routes/auth.routes.js'
 import accountRouter from './routes/account.routes.js'
 import transactionRouter from './routes/transaction.routes.js'
+import merchantRouter from './routes/merchant.routes.js'
 import passportRouter from './routes/passport.routes.js'
 import verificationRouter from './routes/verification.routes.js'
 import passwordRouter from './routes/password.routes.js'
@@ -96,6 +112,7 @@ import passwordRouter from './routes/password.routes.js'
 app.use("/api/v1/auth",authRouter)
 app.use("/api/v1/accounts",accountRouter)
 app.use("/api/v1/transactions",transactionRouter)
+app.use("/api/v1/merchants",merchantRouter)
 app.use("/api/v2/auth",passportRouter)
 app.use("/api/v2/verify",verificationRouter)
 app.use("/api/v2/reset-password",passwordRouter)

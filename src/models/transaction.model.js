@@ -28,6 +28,12 @@ const transactionSchema = new mongoose.Schema({
     type:String,
     required:true,
     unique:true
+  },
+  merchant:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Merchant",
+    default: null,
+    index: true
   }
 },{timestamps:true})
 

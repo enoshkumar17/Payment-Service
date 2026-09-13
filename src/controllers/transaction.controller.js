@@ -10,6 +10,7 @@ import {
   assertValidTransition,
   transitionTransaction,
 } from "../services/paymentStateMachine.js";
+import { localDemoStore } from "../services/localDemoStore.js";
 import mongoose from "mongoose";
 
 /* 
@@ -30,6 +31,15 @@ import mongoose from "mongoose";
 */
 const createTransaction = asyncHandler(async (req, res) => {
   const { fromAccount, toAccount, amount, idempotencyKey } = req.body;
+
+  if (global.IS_LOCAL_DEMO) {
+    const simTx = localDemoStore.simulateDemoPayment({
+      merchantId: req.merchant?._id || (req.body.merchantId || "mch_001_moviehub"),
+      amount,
+      description: req.body.description || "Demo payment simulation",
+    });
+    return res.status(201).json(new ApiResponse(201, simTx, "Transaction successful"));
+  }
 
   if ([fromAccount, toAccount, amount, idempotencyKey].some((field) => !field)) {
     throw new ApiError(400, "all fields are required to make transation");
@@ -101,6 +111,7 @@ const createTransaction = asyncHandler(async (req, res) => {
       amount,
       status: PaymentStatus.PENDING,
       idempotencyKey,
+      merchant: req.merchant?._id || null,
     });
   } catch (err) {
     if (err.code === 11000 || (err.name === "MongoServerError" && err.code === 11000)) {
@@ -278,10 +289,16 @@ const reverseTransaction = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Transaction ID is required for reversal");
   }
 
+  if (global.IS_LOCAL_DEMO) {
+    const reversed = localDemoStore.simulateDemoReversal(transactionId);
+    return res.status(200).json(new ApiResponse(200, reversed, "Transaction reversed successfully"));
+  }
+
   const originalTransaction = await Transaction.findById(transactionId);
   if (!originalTransaction) {
     throw new ApiError(404, "Transaction not found");
   }
+
 
   // 1. Authorization check: user must own the source account or be a system user
   const fromAccountRecord = await Account.findById(originalTransaction.fromAccount);
@@ -501,8 +518,89 @@ const createInitialFundTransaction = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * Transaction listing and filtering for dashboard and external platforms.
+ * Supports pagination and filtering by merchantId, status.
+ */
+const getTransactions = asyncHandler(async (req, res) => {
+  const { merchantId, status, page = 1, limit = 20, search } = req.query;
+
+  const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  if (global.IS_LOCAL_DEMO) {
+    const result = localDemoStore.getTransactions({
+      merchantId,
+      status,
+      search,
+      page: parsedPage,
+      limit: parsedLimit,
+    });
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          transactions: result.transactions,
+          totalCount: result.pagination.total,
+          totalPages: result.pagination.totalPages,
+          currentPage: result.pagination.page,
+        },
+        "Transactions fetched successfully"
+      )
+    );
+  }
+
+  const filter = {};
+
+  if (merchantId) {
+    if (!mongoose.Types.ObjectId.isValid(merchantId)) {
+      throw new ApiError(400, "Invalid merchantId format");
+    }
+    filter.merchant = merchantId;
+  }
+
+  if (status) {
+    const uppercaseStatus = status.toUpperCase();
+    if (!Object.values(PaymentStatus).includes(uppercaseStatus)) {
+      throw new ApiError(
+        400,
+        `Invalid status filter. Supported statuses: ${Object.values(PaymentStatus).join(", ")}`
+      );
+    }
+    filter.status = uppercaseStatus;
+  }
+
+  const [transactions, totalCount] = await Promise.all([
+    Transaction.find(filter)
+      .populate("merchant", "name status")
+      .populate("fromAccount", "username currency status")
+      .populate("toAccount", "username currency status")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parsedLimit),
+    Transaction.countDocuments(filter),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / parsedLimit) || 1;
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        transactions,
+        totalCount,
+        totalPages,
+        currentPage: parsedPage,
+      },
+      "Transactions fetched successfully"
+    )
+  );
+});
+
 export {
   createTransaction,
   reverseTransaction,
   createInitialFundTransaction,
+  getTransactions,
 };
