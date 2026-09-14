@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Infrastructure Dashboard | Multi-Platform Admin</title>
+  <link rel="stylesheet" href="./css/dashboard.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <span class="brand-terminal">&gt;_</span>
+        </div>
+        <div class="brand-info">
+          <div class="brand-title-row">
+            <span class="brand-title">PayPlatform</span>
+            <span class="version-pill">v1.0.0</span>
+          </div>
+          <span class="brand-sub">Payment Infrastructure</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-label">MAIN</div>
+        <a href="#overview" class="nav-item active" data-page="overview">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+          </svg>
+          <span>Overview</span>
+        </a>
+
+        <a href="#transactions" class="nav-item" data-page="transactions">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"></line>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <span>Transactions</span>
+        </a>
+
+        <a href="#merchants" class="nav-item" data-page="merchants">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Merchants / Platforms</span>
+        </a>
+
+        <div class="nav-group-label">DEVELOPER TOOLS</div>
+        <a href="#demo-clients" class="nav-item" data-page="demo-clients">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span>Demo Clients</span>
+          <span class="nav-badge">Simulator</span>
+        </a>
+
+        <a href="#api" class="nav-item" data-page="api">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>API / Integration</span>
+        </a>
+
+        <a href="#settings" class="nav-item" data-page="settings">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-indicator">
+          <span class="status-dot"></span>
+          <span class="status-label" id="backendModeLabel">Local Demo Mode</span>
+        </div>
+        <div class="system-footnote">Using in-memory data store</div>
+        <div class="system-subnote">(MongoDB Atlas not required)</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Navigation Bar -->
+      <header class="top-navbar">
+        <div class="top-left">
+          <h1 class="page-title" id="topPageTitle">Platform Overview</h1>
+          <span class="page-subtitle" id="topPageSubtitle">Monitor your payment infrastructure, merchants and transactions</span>
+        </div>
+        <div class="top-right">
+          <div class="top-status-strip">
+            <span class="status-dot"></span>
+            <span class="status-text">Local Demo Mode</span>
+            <span class="strip-divider">|</span>
+            <span class="port-text">Port: 3500</span>
+            <span class="strip-divider">|</span>
+            <span class="user-pill">Admin ▾</span>
+            <span class="strip-divider">|</span>
+            <button class="top-refresh-btn" id="refreshBtn" title="Refresh Dashboard Data">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Container -->
+      <div class="content-container">
+
+        <!-- ============================================== -->
+        <!-- 1. PAGE: OVERVIEW                              -->
+        <!-- ============================================== -->
+        <section id="page-overview" class="page-section active">
+          <!-- Metric Cards Row -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-top-row">
+                <div class="metric-label">Total Processed Volume</div>
+                <div class="metric-icon-box metric-icon-blue">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value text-primary" id="statTotalVolume">₹0</div>
+              <div class="metric-footer">Across all client platforms</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-top-row">
+                <div class="metric-label">Total Transactions</div>
+                <div class="metric-icon-box metric-icon-slate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value" id="statTotalTransactions">0</div>
+              <div class="metric-footer">Lifetime system count</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-top-row">
+                <div class="metric-label">Successful Payments</div>
+                <div class="metric-icon-box metric-icon-green">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value text-success" id="statSucceeded">0</div>
+              <div class="metric-footer">Canonical SUCCEEDED state</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-top-row">
+                <div class="metric-label">Failed Payments</div>
+                <div class="metric-icon-box metric-icon-red">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value text-danger" id="statFailed">0</div>
+              <div class="metric-footer">Terminal FAILED state</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-top-row">
+                <div class="metric-label">Pending / Processing</div>
+                <div class="metric-icon-box metric-icon-amber">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value text-warning" id="statPendingProcessing">0</div>
+              <div class="metric-footer">In-flight state transitions</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-top-row">
+                <div class="metric-label">Reversals</div>
+                <div class="metric-icon-box metric-icon-purple">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                  </svg>
+                </div>
+              </div>
+              <div class="metric-value text-purple" id="statReversed">0</div>
+              <div class="metric-footer">Compensating ledger entries</div>
+            </div>
+          </div>
+
+          <!-- Section: Platforms Using Your Backend -->
+          <div class="section-container">
+            <div class="section-header">
+              <div>
+                <h2 class="section-title">Platforms Using Your Backend</h2>
+                <p class="section-desc">Client applications authorized to initiate payments through your infrastructure</p>
+              </div>
+              <button class="btn btn-primary btn-sm" id="openCreateMerchantBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Register Platform</span>
+              </button>
+            </div>
+
+            <div class="platforms-summary-grid" id="overviewPlatformsGrid">
+              <!-- Rendered via JS -->
+              <div class="loading-state">Loading platforms data...</div>
+            </div>
+          </div>
+
+          <!-- Section: Recent Platform Activity -->
+          <div class="section-container">
+            <div class="section-header">
+              <div>
+                <h2 class="section-title">Recent Inflow Activity</h2>
+                <p class="section-desc">Latest transactions processed across MovieHub, FoodBox, and EventBook</p>
+              </div>
+              <a href="#transactions" class="section-action-link" data-page="transactions">View All Transactions &rarr;</a>
+            </div>
+
+            <div class="table-card">
+              <div class="table-responsive">
+                <table class="data-table" id="overviewRecentTable">
+                  <thead>
+                    <tr>
+                      <th style="width: 44px; text-align: center;">#</th>
+                      <th style="width: 175px;">Transaction ID</th>
+                      <th style="width: 120px;">Platform</th>
+                      <th style="width: 110px; text-align: right;">Amount (₹)</th>
+                      <th style="width: 140px;">From Account</th>
+                      <th style="width: 140px;">To Account</th>
+                      <th style="width: 110px; text-align: center;">Status</th>
+                      <th style="width: 140px;">Date &amp; Time</th>
+                    </tr>
+                  </thead>
+                  <tbody id="overviewRecentTransactionsTable">
+                    <tr><td colspan="8" class="text-center py-4 text-muted">Loading activity...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 2. PAGE: TRANSACTIONS                          -->
+        <!-- ============================================== -->
+        <section id="page-transactions" class="page-section">
+          <!-- Filters Bar -->
+          <div class="filters-card">
+            <div class="filter-group search-filter">
+              <label>Search ID / Key</label>
+              <input type="text" id="txSearchInput" placeholder="Filter by Tx ID or Idempotency Key..." class="form-input" />
+            </div>
+
+            <div class="filter-group">
+              <label>Platform / Merchant</label>
+              <select id="txMerchantFilter" class="form-select">
+                <option value="">All Platforms</option>
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label>Status</label>
+              <select id="txStatusFilter" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="SUCCEEDED">SUCCEEDED</option>
+                <option value="PROCESSING">PROCESSING</option>
+                <option value="PENDING">PENDING</option>
+                <option value="FAILED">FAILED</option>
+                <option value="REVERSED">REVERSED</option>
+              </select>
+            </div>
+
+            <div class="filter-actions">
+              <button class="btn btn-secondary" id="txClearFiltersBtn">Reset</button>
+            </div>
+          </div>
+
+          <!-- Transactions Table -->
+          <div class="table-card">
+            <div class="table-responsive">
+              <table class="data-table" id="transactionsTable">
+                <thead>
+                  <tr>
+                    <th style="width: 175px;">Transaction ID</th>
+                    <th style="width: 120px;">Platform</th>
+                    <th style="width: 105px; text-align: right;">Amount</th>
+                    <th style="width: 135px;">From Account</th>
+                    <th style="width: 135px;">To Account</th>
+                    <th style="width: 110px; text-align: center;">Status</th>
+                    <th style="width: 135px;">Date</th>
+                    <th style="width: 145px;">Idempotency Key</th>
+                    <th style="width: 85px; text-align: center;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="transactionsFullTable">
+                  <tr><td colspan="9" class="text-center py-4 text-muted">Loading transactions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination">
+              <span class="pagination-info" id="paginationInfo">Showing 0 of 0 transactions</span>
+              <div class="pagination-controls">
+                <button class="btn btn-sm btn-secondary" id="prevPageBtn" disabled>&larr; Previous</button>
+                <span class="page-indicator" id="pageIndicator">Page 1</span>
+                <button class="btn btn-sm btn-secondary" id="nextPageBtn" disabled>Next &rarr;</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 3. PAGE: MERCHANTS / PLATFORMS                 -->
+        <!-- ============================================== -->
+        <section id="page-merchants" class="page-section">
+          <div class="section-intro-card">
+            <div class="intro-content">
+              <h3>Platforms Using Your Payment Backend</h3>
+              <p>
+                Each card below represents an independent external platform (e.g. ticketing, food ordering, event registration)
+                that integrates with your payment backend using an issued Merchant API Key.
+              </p>
+            </div>
+            <button class="btn btn-primary" id="openCreateMerchantBtn2">+ Register New Platform</button>
+          </div>
+
+          <!-- Merchants Grid -->
+          <div class="merchants-detailed-grid" id="merchantsDetailedGrid">
+            <!-- Rendered via JS -->
+            <div class="loading-state">Loading platform registry...</div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 4. PAGE: DEMO CLIENT APPLICATIONS             -->
+        <!-- ============================================== -->
+        <section id="page-demo-clients" class="page-section">
+          <div class="section-intro-card">
+            <div class="intro-content">
+              <h3>Demo Client Applications</h3>
+              <p>
+                These client cards simulate external student frontend applications (MovieHub, FoodBox, EventBook).
+                Test how an external client sends its <code>x-api-key</code>, triggers the payment state machine,
+                and reflects in the platform ledger.
+              </p>
+            </div>
+            <div class="demo-badge">Interactive Simulation Playground</div>
+          </div>
+
+          <div class="demo-clients-grid">
+            <!-- MovieHub Demo Card -->
+            <div class="demo-app-card" id="demoCardMovieHub">
+              <div class="demo-app-header">
+                <div class="app-avatar moviehub-avatar">🎬</div>
+                <div>
+                  <h4 class="app-title">MovieHub</h4>
+                  <span class="app-category">Movie Ticket Booking Platform</span>
+                </div>
+              </div>
+
+              <div class="demo-app-connection">
+                <span class="connected-badge">✓ Connected to Payment Backend</span>
+                <div class="api-key-preview">
+                  <span class="key-label">Merchant Key:</span>
+                  <code id="moviehubKeyPreview">mch_live_...a82f</code>
+                </div>
+              </div>
+
+              <div class="demo-product-box">
+                <div class="product-info">
+                  <div class="product-name">Avengers: Secret Wars Screening</div>
+                  <div class="product-desc">Standard Recliner • Seat B-12</div>
+                </div>
+                <div class="product-price">₹250</div>
+              </div>
+
+              <div class="demo-actions">
+                <button class="btn btn-primary btn-block" onclick="window.runDemoPayment('mch_001_moviehub', 250, 'Movie ticket: Avengers Screening', 'SUCCEEDED', 'MovieHub')">
+                  Simulate ₹250 Ticket Payment
+                </button>
+                <div class="demo-secondary-actions">
+                  <button class="btn btn-xs btn-outline-danger" onclick="window.runDemoPayment('mch_001_moviehub', 250, 'Failed checkout: Card Declined', 'FAILED', 'MovieHub')">
+                    Simulate Failure
+                  </button>
+                  <button class="btn btn-xs btn-outline-purple" onclick="window.runDemoReversal('MovieHub')">
+                    Simulate Refund
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- FoodBox Demo Card -->
+            <div class="demo-app-card" id="demoCardFoodBox">
+              <div class="demo-app-header">
+                <div class="app-avatar foodbox-avatar">🍔</div>
+                <div>
+                  <h4 class="app-title">FoodBox</h4>
+                  <span class="app-category">On-Demand Food Ordering Application</span>
+                </div>
+              </div>
+
+              <div class="demo-app-connection">
+                <span class="connected-badge">✓ Connected to Payment Backend</span>
+                <div class="api-key-preview">
+                  <span class="key-label">Merchant Key:</span>
+                  <code id="foodboxKeyPreview">mch_live_...a5b6</code>
+                </div>
+              </div>
+
+              <div class="demo-product-box">
+                <div class="product-info">
+                  <div class="product-name">Gourmet Burger & Truffle Fries Combo</div>
+                  <div class="product-desc">Order #4421 • Fast Delivery</div>
+                </div>
+                <div class="product-price">₹420</div>
+              </div>
+
+              <div class="demo-actions">
+                <button class="btn btn-primary btn-block" onclick="window.runDemoPayment('mch_002_foodbox', 420, 'Food delivery: Burger Combo', 'SUCCEEDED', 'FoodBox')">
+                  Simulate ₹420 Food Payment
+                </button>
+                <div class="demo-secondary-actions">
+                  <button class="btn btn-xs btn-outline-danger" onclick="window.runDemoPayment('mch_002_foodbox', 420, 'Failed order: Merchant Busy', 'FAILED', 'FoodBox')">
+                    Simulate Failure
+                  </button>
+                  <button class="btn btn-xs btn-outline-purple" onclick="window.runDemoReversal('FoodBox')">
+                    Simulate Refund
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- EventBook Demo Card -->
+            <div class="demo-app-card" id="demoCardEventBook">
+              <div class="demo-app-header">
+                <div class="app-avatar eventbook-avatar">🎟️</div>
+                <div>
+                  <h4 class="app-title">EventBook</h4>
+                  <span class="app-category">Live Tech Conference & Festival Booking</span>
+                </div>
+              </div>
+
+              <div class="demo-app-connection">
+                <span class="connected-badge badge-inactive" id="eventbookConnBadge">! Platform Inactive (Demo)</span>
+                <div class="api-key-preview">
+                  <span class="key-label">Merchant Key:</span>
+                  <code id="eventbookKeyPreview">mch_live_...e5f6</code>
+                </div>
+              </div>
+
+              <div class="demo-product-box">
+                <div class="product-info">
+                  <div class="product-name">National Student Tech Summit 2026</div>
+                  <div class="product-desc">All-Access Student Pass</div>
+                </div>
+                <div class="product-price">₹1,200</div>
+              </div>
+
+              <div class="demo-actions">
+                <button class="btn btn-primary btn-block" onclick="window.runDemoPayment('mch_003_eventbook', 1200, 'Conference Pass: Tech Summit 2026', 'SUCCEEDED', 'EventBook')">
+                  Simulate ₹1,200 Pass Payment
+                </button>
+                <div class="demo-secondary-actions">
+                  <button class="btn btn-xs btn-outline-secondary" onclick="window.toggleEventBookStatus()">
+                    Toggle Platform Active / Inactive
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Visual Simulation Result Drawer / Receipt -->
+          <div class="simulation-feedback-box" id="simulationFeedbackBox" style="display: none;">
+            <div class="feedback-header">
+              <span class="feedback-title">Payment State Machine Live Execution Flow</span>
+              <button class="close-btn" onclick="document.getElementById('simulationFeedbackBox').style.display='none'">&times;</button>
+            </div>
+            <div class="state-flow-stepper">
+              <div class="step-node" id="stepNodePending">
+                <div class="step-circle">1</div>
+                <div class="step-label">PENDING</div>
+              </div>
+              <div class="step-line" id="stepLine1"></div>
+              <div class="step-node" id="stepNodeProcessing">
+                <div class="step-circle">2</div>
+                <div class="step-label">PROCESSING</div>
+              </div>
+              <div class="step-line" id="stepLine2"></div>
+              <div class="step-node" id="stepNodeFinal">
+                <div class="step-circle">3</div>
+                <div class="step-label" id="stepFinalLabel">SUCCEEDED</div>
+              </div>
+            </div>
+            <div class="feedback-details" id="simulationFeedbackDetails">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 5. PAGE: API / INTEGRATION GUIDE               -->
+        <!-- ============================================== -->
+        <section id="page-api" class="page-section">
+          <div class="guide-card">
+            <div class="guide-header">
+              <h3>Integrating with PayPlatform Backend</h3>
+              <p>How external applications (like MovieHub or FoodBox) connect to this reusable payment engine.</p>
+            </div>
+
+            <div class="integration-steps">
+              <div class="step-item">
+                <div class="step-number">1</div>
+                <div class="step-body">
+                  <h4>Register Your Platform</h4>
+                  <p>Admins create a merchant profile and receive a unique <code>mch_live_...</code> API key once.</p>
+                </div>
+              </div>
+
+              <div class="step-item">
+                <div class="step-number">2</div>
+                <div class="step-body">
+                  <h4>Send the <code>x-api-key</code> in Request Headers</h4>
+                  <p>Every transaction request includes the platform key to identify and associate the transaction.</p>
+                  <pre class="code-block"><code>POST /api/v1/transactions/new-transaction
+Host: localhost:3500
+x-api-key: mch_live_4b8f72a1e0c395d821f06a92cb71a39d84e1a0b3f5c9e2d1
+Authorization: Bearer &lt;customer_jwt_token&gt;
+Content-Type: application/json
+
+{
+  "fromAccount": "66e1b7c12f4a5c0012a4e111",
+  "toAccount": "66e1b7c12f4a5c0012a4e222",
+  "amount": 250,
+  "idempotencyKey": "order_moviehub_ticket_9921"
+}</code></pre>
+                </div>
+              </div>
+
+              <div class="step-item">
+                <div class="step-number">3</div>
+                <div class="step-body">
+                  <h4>Dual-Layer Security Verification</h4>
+                  <p>
+                    The backend verifies that the <strong>Merchant Key</strong> is active, AND verifies that the
+                    <strong>Customer Token</strong> actually owns the <code>fromAccount</code>. Merchants cannot debit arbitrary accounts.
+                  </p>
+                </div>
+              </div>
+
+              <div class="step-item">
+                <div class="step-number">4</div>
+                <div class="step-body">
+                  <h4>State Machine & Ledger Execution</h4>
+                  <p>
+                    Transactions enter <code>PENDING</code>, acquire a row write lock on the source account,
+                    transition to <code>PROCESSING</code>, insert double-entry ledger debit and credit entries,
+                    and transition atomically to <code>SUCCEEDED</code>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- 6. PAGE: SETTINGS                              -->
+        <!-- ============================================== -->
+        <section id="page-settings" class="page-section">
+          <div class="settings-card">
+            <h3>Infrastructure Environment Settings</h3>
+            <div class="settings-group">
+              <div class="setting-row">
+                <div>
+                  <div class="setting-title">Execution Mode</div>
+                  <div class="setting-desc">Current database connection layer</div>
+                </div>
+                <span class="badge badge-success" id="settingsEnvBadge">Local In-Memory Demo Mode</span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-title">Server Port</div>
+                  <div class="setting-desc">Express listener port</div>
+                </div>
+                <span class="setting-value">3500</span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <div class="setting-title">Double-Entry Ledger Integrity</div>
+                  <div class="setting-desc">Verifies total debits equal total credits across all accounts</div>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="alert('Double-Entry Balance Verified: Total Debits equal Total Credits (Zero-sum consistency maintained).')">
+                  Run Ledger Audit
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: REGISTER NEW MERCHANT                   -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="createMerchantModal">
+    <div class="wizard-modal-box">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h3>Register New Client Platform</h3>
+        <button class="close-btn" id="closeCreateMerchantBtn">&times;</button>
+      </div>
+
+      <!-- Stepper: 4 steps -->
+      <div class="wizard-stepper" id="wizardStepper">
+        <div class="wizard-step active" data-step="1" id="stepIndicator1">
+          <div class="wizard-step-num">1</div>
+          <span class="wizard-step-title">Platform Details</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step" data-step="2" id="stepIndicator2">
+          <div class="wizard-step-num">2</div>
+          <span class="wizard-step-title">Integration</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step" data-step="3" id="stepIndicator3">
+          <div class="wizard-step-num">3</div>
+          <span class="wizard-step-title">Security</span>
+        </div>
+        <div class="wizard-step-arrow">→</div>
+        <div class="wizard-step" data-step="4" id="stepIndicator4">
+          <div class="wizard-step-num">4</div>
+          <span class="wizard-step-title">Review</span>
+        </div>
+      </div>
+
+      <!-- STEP 1 — PLATFORM DETAILS -->
+      <div class="wizard-panel active" id="wizardPanel1">
+        <div class="wizard-panel-title">Platform Details</div>
+        <div class="wizard-panel-sub">Tell us about the application that will use your payment infrastructure.</div>
+
+        <div class="form-group">
+          <label>Platform / Application Name <span class="required-star">*</span></label>
+          <input type="text" id="wizardPlatformName" class="form-input" placeholder="e.g. MovieHub, FoodBox" required autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label>Business / Organization Name <span class="required-star">*</span></label>
+          <input type="text" id="wizardOrgName" class="form-input" placeholder="e.g. MovieHub Technologies" required autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label>Platform Type <span class="required-star">*</span></label>
+          <select id="wizardPlatformType" class="form-select" required>
+            <option value="" disabled selected>Select platform type...</option>
+            <option value="E-commerce">E-commerce</option>
+            <option value="Food Delivery">Food Delivery</option>
+            <option value="Ticketing">Ticketing</option>
+            <option value="SaaS">SaaS</option>
+            <option value="Marketplace">Marketplace</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Description <span class="required-star">*</span></label>
+          <textarea id="wizardDesc" class="form-input" rows="3" placeholder="Briefly describe what this platform does..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Website / Application URL</label>
+          <input type="url" id="wizardWebsite" class="form-input" placeholder="https://example.com" autocomplete="off" />
+        </div>
+      </div>
+
+      <!-- STEP 2 — INTEGRATION CONFIGURATION -->
+      <div class="wizard-panel" id="wizardPanel2">
+        <div class="wizard-panel-title">Integration Configuration</div>
+        <div class="wizard-panel-sub">Configure how this platform will communicate with your payment backend.</div>
+
+        <div class="form-group">
+          <label>Environment</label>
+          <div class="env-selector-group">
+            <button type="button" class="env-option-btn active" data-env="Sandbox" id="envBtnSandbox">
+              <span>Sandbox</span>
+              <small>Testing &amp; Demo simulation</small>
+            </button>
+            <button type="button" class="env-option-btn" data-env="Live" id="envBtnLive">
+              <span>Live</span>
+              <small>Production transactions</small>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Webhook URL</label>
+          <input type="url" id="wizardWebhookUrl" class="form-input" placeholder="https://example.com/webhooks/payments" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label>Webhook Events</label>
+          <div class="checkbox-card-grid">
+            <label class="checkbox-card checked">
+              <input type="checkbox" name="wizardWebhookEvents" value="payment.succeeded" checked />
+              <span>payment.succeeded</span>
+            </label>
+            <label class="checkbox-card checked">
+              <input type="checkbox" name="wizardWebhookEvents" value="payment.failed" checked />
+              <span>payment.failed</span>
+            </label>
+            <label class="checkbox-card">
+              <input type="checkbox" name="wizardWebhookEvents" value="payment.processing" />
+              <span>payment.processing</span>
+            </label>
+            <label class="checkbox-card">
+              <input type="checkbox" name="wizardWebhookEvents" value="payment.reversed" />
+              <span>payment.reversed</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>API Capabilities</label>
+          <div class="checkbox-card-grid">
+            <label class="checkbox-card checked">
+              <input type="checkbox" name="wizardCapabilities" value="Create Payments" checked />
+              <span>Create Payments</span>
+            </label>
+            <label class="checkbox-card checked">
+              <input type="checkbox" name="wizardCapabilities" value="Check Transaction Status" checked />
+              <span>Check Transaction Status</span>
+            </label>
+            <label class="checkbox-card checked" style="grid-column: span 2;">
+              <input type="checkbox" name="wizardCapabilities" value="View Transaction History" checked />
+              <span>View Transaction History</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="info-callout">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <span>Webhooks allow your application to receive real-time payment state updates.</span>
+        </div>
+      </div>
+
+      <!-- STEP 3 — SECURITY & ACCESS -->
+      <div class="wizard-panel" id="wizardPanel3">
+        <div class="wizard-panel-title">Security &amp; Access</div>
+        <div class="wizard-panel-sub">Configure how your platform is authenticated when accessing the payment backend.</div>
+
+        <div class="form-group">
+          <label>Merchant API Key</label>
+          <div class="key-preview-box">
+            <span>An API key will be generated automatically when this platform is registered.</span>
+            <code>mch_live_... (auto-generated)</code>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Allowed Origins / Domains</label>
+          <input type="text" id="wizardAllowedOrigins" class="form-input" placeholder="https://app.example.com" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label>IP Restrictions</label>
+          <input type="text" id="wizardIpRestrictions" class="form-input" placeholder="Optional — e.g. 203.0.113.10" autocomplete="off" />
+        </div>
+
+        <div class="security-callout">
+          <span style="font-size: 16px;">🔒</span>
+          <div>
+            <strong>API keys authenticate your platform with the payment backend.</strong><br>
+            Keep secret keys on your server and never expose them in browser-side code.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 — REVIEW & REGISTER -->
+      <div class="wizard-panel" id="wizardPanel4">
+        <div class="wizard-panel-title">Review Platform</div>
+        <div class="wizard-panel-sub">Review the configuration before creating your platform.</div>
+
+        <div class="review-card">
+          <!-- Section 1: Platform & Organization -->
+          <div class="review-section">
+            <div class="review-section-header">
+              <span class="review-section-title">Platform &amp; Organization</span>
+              <button type="button" class="review-edit-btn" data-goto="1">Edit</button>
+            </div>
+            <div class="review-grid">
+              <span class="review-label">Platform:</span>
+              <span class="review-value" id="revPlatformName">—</span>
+
+              <span class="review-label">Organization:</span>
+              <span class="review-value" id="revOrgName">—</span>
+
+              <span class="review-label">Type:</span>
+              <span class="review-value" id="revPlatformType">—</span>
+
+              <span class="review-label">Description:</span>
+              <span class="review-value" id="revDesc">—</span>
+
+              <span class="review-label">Website:</span>
+              <span class="review-value" id="revWebsite">None specified</span>
+            </div>
+          </div>
+
+          <!-- Section 2: Integration Configuration -->
+          <div class="review-section">
+            <div class="review-section-header">
+              <span class="review-section-title">Integration &amp; Environment</span>
+              <button type="button" class="review-edit-btn" data-goto="2">Edit</button>
+            </div>
+            <div class="review-grid">
+              <span class="review-label">Environment:</span>
+              <span class="review-value" id="revEnvironment">Sandbox</span>
+
+              <span class="review-label">Webhook URL:</span>
+              <span class="review-value" id="revWebhookUrl">Not configured</span>
+
+              <span class="review-label">Events:</span>
+              <div class="review-tag-list" id="revWebhookEvents">
+                <span class="review-tag">payment.succeeded</span>
+                <span class="review-tag">payment.failed</span>
+              </div>
+
+              <span class="review-label">Capabilities:</span>
+              <div class="review-tag-list" id="revCapabilities">
+                <span class="review-tag">Create Payments</span>
+                <span class="review-tag">Transaction Status</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Security & Access -->
+          <div class="review-section">
+            <div class="review-section-header">
+              <span class="review-section-title">Security &amp; Access</span>
+              <button type="button" class="review-edit-btn" data-goto="3">Edit</button>
+            </div>
+            <div class="review-grid">
+              <span class="review-label">API Key:</span>
+              <span class="review-value" style="color: var(--primary);">Auto-generated upon registration</span>
+
+              <span class="review-label">Allowed Origins:</span>
+              <span class="review-value" id="revAllowedOrigins">Any (*)</span>
+
+              <span class="review-label">IP Restrictions:</span>
+              <span class="review-value" id="revIpRestrictions">None</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUCCESS PANEL -->
+      <div class="wizard-success-panel" id="wizardSuccessPanel">
+        <div class="wizard-success-icon">✓</div>
+        <div class="wizard-success-title">Platform Registered Successfully</div>
+        <div class="wizard-success-subtitle">Your platform is now authorized to use the PayPlatform payment backend.</div>
+
+        <div class="wizard-key-card">
+          <div class="wizard-key-label">Merchant API Key</div>
+          <div class="wizard-key-row">
+            <code id="wizardSuccessKey">mch_live_...</code>
+            <button type="button" class="btn btn-sm btn-secondary" id="wizardCopyKeyBtn">Copy</button>
+          </div>
+        </div>
+
+        <div class="alert alert-warning" style="margin-top: 0; margin-bottom: 14px; text-align: left; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span>
+          <span>This key will only be shown once. Store it securely.</span>
+        </div>
+
+        <div class="wizard-next-steps">
+          <div class="wizard-next-steps-title">Next Steps</div>
+          <div class="next-step-item">
+            <div class="next-step-num">1</div>
+            <div>Copy your Merchant API Key and store it in a secure environment file.</div>
+          </div>
+          <div class="next-step-item">
+            <div class="next-step-num">2</div>
+            <div>Add it securely to your backend application service.</div>
+          </div>
+          <div class="next-step-item">
+            <div class="next-step-num">3</div>
+            <div>Send it using the <code>x-api-key</code> request header for authentication.</div>
+          </div>
+          <div class="next-step-item">
+            <div class="next-step-num">4</div>
+            <div>Start creating payment transactions and observing them in this dashboard.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px;">
+          <button type="button" class="btn btn-secondary" id="wizardViewApiBtn">View Integration Guide</button>
+          <button type="button" class="btn btn-primary" id="wizardGoToPlatformBtn">Go to Platform</button>
+        </div>
+      </div>
+
+      <!-- Wizard Modal Footer (Hidden on Success) -->
+      <div class="modal-footer" id="wizardModalFooter">
+        <button type="button" class="btn btn-secondary" id="wizardPrevBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="wizardNextBtn" disabled>Next: Integration &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: TRANSACTION DETAILS DRAWER              -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="txDetailModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Transaction Lifecycle Details</h3>
+        <button class="close-btn" id="closeTxDetailBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="txDetailContent">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeTxDetailFooterBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: MERCHANT DETAILS & STATS MODAL          -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="merchantDetailModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <h3 id="merchantDetailModalTitle">Platform Statistics</h3>
+        <button class="close-btn" id="closeMerchantDetailBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="merchantDetailModalContent">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeMerchantDetailFooterBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: PERMANENT MERCHANT DELETION CONFIRM     -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="deleteMerchantModal">
+
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="color: var(--danger);">Permanent Merchant Deletion</h3>
+        <button class="close-btn" id="closeDeleteMerchantBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning" style="margin-top: 0; margin-bottom: 16px;">
+          <div class="alert-title">⚠️ Irreversible Administrative Action</div>
+          <p>This permanently removes this merchant because it has <strong>no transaction history</strong>. This action cannot be undone.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; margin-bottom: 16px; background-color: var(--bg-surface-subtle); padding: 12px; border-radius: 6px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Platform Name:</span>
+            <strong id="deleteTargetMerchantName"></strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Status:</span>
+            <span id="deleteTargetMerchantStatus"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Transaction Count:</span>
+            <span class="badge badge-success">0 Transactions</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Masked API Key:</span>
+            <code id="deleteTargetMerchantKey"></code>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>To confirm, type the exact merchant name <strong id="deleteConfirmMatchTarget" style="color: var(--danger);"></strong> below:</label>
+          <input type="text" id="deleteConfirmInput" class="form-input" placeholder="Type merchant name here" autocomplete="off" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteMerchantBtn">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteMerchantBtn" disabled>Permanently Delete Merchant</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: PERMANENT DELETION BLOCKED (AUDIT)       -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop" id="deleteBlockedModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Permanent Deletion Unavailable</h3>
+        <button class="close-btn" id="closeDeleteBlockedBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger" style="margin-top: 0; margin-bottom: 16px;">
+          <div class="alert-title">🔒 Payment Record Audit Protection Policy</div>
+          <p>
+            This merchant has <strong>transaction history</strong> and cannot be permanently deleted because
+            payment records and double-entry ledger books must remain auditable.
+          </p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; margin-bottom: 16px; background-color: var(--bg-surface-subtle); padding: 12px; border-radius: 6px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Platform Name:</span>
+            <strong id="blockedTargetMerchantName"></strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Total Transactions:</span>
+            <strong id="blockedTargetTxCount"></strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Successful Transactions:</span>
+            <span style="color: var(--success); font-weight: 700;" id="blockedTargetSuccessTx"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Processed Volume:</span>
+            <strong id="blockedTargetVolume"></strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span class="text-muted">Current Status:</span>
+            <span id="blockedTargetStatus"></span>
+          </div>
+        </div>
+
+        <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
+          <strong>Recommended Action:</strong> Deactivate the merchant platform. Deactivation immediately revokes its API key and blocks any new payment initiation while keeping historical transactions intact.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelDeleteBlockedBtn">Close</button>
+        <button type="button" class="btn btn-primary" id="blockedDeactivateBtn">Deactivate Platform</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./js/app.js"></script>
+
+</body>
+</html>
