@@ -8,18 +8,40 @@ import session from "express-session"
 import { fileURLToPath } from "url";
 import passport from "./config/passport.js"
 
+import cors from "cors";
+
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename)
-const app = express()
+const __dirname = path.dirname(__filename);
+const app = express();
 
-app.use(express.json())
-app.use(cookieParser())
+app.use(
+  cors({
+    origin: "https://payment-service-dashboard.vercel.app",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-api-key",
+      "x-dashboard-admin",
+    ],
+  })
+);
 
-app.use(session({
-  secret:process.env.SESSION_SECRET,
-  resave:false,
-  saveUninitialized:true
-}))
+app.use(express.json());
+app.use(cookieParser());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "default_session_secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    },
+  })
+);
 
 app.use(express.static(path.join(__dirname,"views")))
 

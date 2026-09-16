@@ -16,6 +16,96 @@ let currentTxFilter = {
   search: "",
 };
 
+// Authentication State & Helpers
+let currentUser = null;
+
+function showAuthScreen() {
+  const authScreen = document.getElementById("authScreen");
+  if (authScreen) authScreen.style.display = "flex";
+}
+
+function hideAuthScreen() {
+  const authScreen = document.getElementById("authScreen");
+  if (authScreen) authScreen.style.display = "none";
+}
+
+function updateUserUI(user) {
+  const userPill = document.getElementById("userPill");
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (userPill) {
+    const displayName = user?.email || user?.name || "Admin";
+    userPill.textContent = `${displayName} ▾`;
+    userPill.title = `Signed in as ${user?.email || user?.name}`;
+  }
+  if (logoutBtn) {
+    logoutBtn.style.display = "inline-block";
+    logoutBtn.onclick = async () => {
+      try {
+        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch (err) {}
+      window.location.reload();
+    };
+  }
+}
+
+async function checkAuth() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
+      credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      currentUser = data?.data;
+      hideAuthScreen();
+      updateUserUI(currentUser);
+      return true;
+    } else {
+      showAuthScreen();
+      return false;
+    }
+  } catch (err) {
+    console.warn("Auth check error or offline mode:", err);
+    showAuthScreen();
+    return false;
+  }
+}
+
+// Centralized Authenticated Fetch Wrapper
+async function apiFetch(url, options = {}) {
+  const defaultHeaders = {
+    "Content-Type": "application/json",
+  };
+  const headers = {
+    ...defaultHeaders,
+    ...(options.headers || {}),
+  };
+
+  // Do not send Content-Type on GET requests without a body
+  if (!options.body && (!options.method || options.method === "GET")) {
+    delete headers["Content-Type"];
+  }
+
+  const mergedOptions = {
+    ...options,
+    credentials: "include",
+    headers,
+  };
+
+  try {
+    const response = await fetch(url, mergedOptions);
+    if (response.status === 401) {
+      showAuthScreen();
+    }
+    return response;
+  } catch (error) {
+    console.error(`Network error requesting ${url}:`, error);
+    throw error;
+  }
+}
+
 // Formatting Helpers
 function formatCurrency(amount) {
   const num = Number(amount) || 0;
@@ -104,7 +194,7 @@ function initRouter() {
     overview: { title: "Platform Overview", sub: "Monitor your payment infrastructure, merchants and transactions" },
     transactions: { title: "Transaction History", sub: "Global ledger & payment state transition audit" },
     merchants: { title: "Platforms / Merchants", sub: "Client applications authorized to use your backend" },
-    "demo-clients": { title: "Demo Client Applications", sub: "Simulate external apps integrating with your payment engine" },
+    "demo-clients": { title: "Client Platforms", sub: "Test payment transactions against registered client platforms" },
     api: { title: "API & Integration Guide", sub: "Integration workflow for external client frontends" },
     settings: { title: "Environment Settings", sub: "System information & double-entry integrity" },
   };
@@ -157,9 +247,7 @@ function initRouter() {
 // -----------------------------------------------------------------------------
 async function loadOverviewData() {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/statistics`, {
-      headers: { "x-dashboard-admin": "true" },
-    });
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/statistics`);
     const json = await res.json();
     const stats = json?.data || {};
 
@@ -172,18 +260,14 @@ async function loadOverviewData() {
     document.getElementById("statReversed").textContent = stats.reversedCount || 0;
 
     // Load and render platforms summary
-    const mRes = await fetch(`${API_BASE_URL}/api/v1/merchants`, {
-      headers: { "x-dashboard-admin": "true" },
-    });
+    const mRes = await apiFetch(`${API_BASE_URL}/api/v1/merchants`);
     const mJson = await mRes.json();
     currentMerchantList = mJson?.data || [];
     renderOverviewPlatforms(currentMerchantList);
     populateMerchantFilterDropdown();
 
     // Load recent 5 transactions
-    const txRes = await fetch(`${API_BASE_URL}/api/v1/transactions?limit=5`, {
-      headers: { "x-dashboard-admin": "true" },
-    });
+    const txRes = await apiFetch(`${API_BASE_URL}/api/v1/transactions?limit=5`);
     const txJson = await txRes.json();
     renderOverviewRecentTransactions(txJson?.data?.transactions || []);
   } catch (err) {
@@ -300,7 +384,7 @@ async function loadTransactionsData() {
   if (search) url += `&search=${encodeURIComponent(search)}`;
 
   try {
-    const res = await fetch(url, { headers: { "x-dashboard-admin": "true" } });
+    const res = await apiFetch(url);
     const json = await res.json();
     const data = json?.data || {};
     const txList = data.transactions || [];
@@ -327,7 +411,7 @@ function renderTransactionsTable(txList) {
   if (!tbody) return;
 
   if (txList.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No transactions matched your filters</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-muted">No transactions yet</td></tr>`;
     return;
   }
 
@@ -395,9 +479,7 @@ function populateMerchantFilterDropdown() {
 // -----------------------------------------------------------------------------
 async function loadMerchantsData() {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants`, {
-      headers: { "x-dashboard-admin": "true" },
-    });
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants`);
     const json = await res.json();
     currentMerchantList = json?.data || [];
     renderMerchantsPage(currentMerchantList);
@@ -412,7 +494,7 @@ function renderMerchantsPage(merchants) {
   if (!container) return;
 
   if (merchants.length === 0) {
-    container.innerHTML = `<div class="loading-state">No platforms registered yet. Click '+ Register New Platform' to add one.</div>`;
+    container.innerHTML = `<div class="empty-state" style="padding: 32px; text-align: center; color: var(--text-muted); font-size: 13.5px;">No platforms connected yet. Click '+ Register New Platform' to add one.</div>`;
     return;
   }
 
@@ -487,18 +569,23 @@ function loadDemoClientsData() {
   const eventBook = currentMerchantList.find((m) => m._id === "mch_003_eventbook" || m.name === "EventBook");
 
   if (movieHub && document.getElementById("moviehubKeyPreview")) {
-    document.getElementById("moviehubKeyPreview").textContent = movieHub.apiKeyMasked;
+    document.getElementById("moviehubKeyPreview").textContent = movieHub.apiKeyMasked || "mch_live_...xxxx";
   }
   if (foodBox && document.getElementById("foodboxKeyPreview")) {
-    document.getElementById("foodboxKeyPreview").textContent = foodBox.apiKeyMasked;
+    document.getElementById("foodboxKeyPreview").textContent = foodBox.apiKeyMasked || "mch_live_...xxxx";
   }
-  if (eventBook && document.getElementById("eventbookKeyPreview")) {
-    document.getElementById("eventbookKeyPreview").textContent = eventBook.apiKeyMasked;
-    const isAct = eventBook.status === "ACTIVE";
-    const b = document.getElementById("eventbookConnBadge");
-    if (b) {
-      b.className = isAct ? "connected-badge" : "connected-badge badge-inactive";
-      b.textContent = isAct ? "✓ Connected to Payment Backend" : "! Platform Inactive (Demo)";
+
+  const eventBookCard = document.getElementById("demoCardEventBook");
+  if (eventBookCard) {
+    eventBookCard.style.display = eventBook ? "block" : "none";
+    if (eventBook && document.getElementById("eventbookKeyPreview")) {
+      document.getElementById("eventbookKeyPreview").textContent = eventBook.apiKeyMasked || "mch_live_...xxxx";
+      const isAct = eventBook.status === "ACTIVE";
+      const b = document.getElementById("eventbookConnBadge");
+      if (b) {
+        b.className = isAct ? "connected-badge" : "connected-badge badge-inactive";
+        b.textContent = isAct ? "✓ Connected to Payment Backend" : "! Platform Inactive";
+      }
     }
   }
 }
@@ -506,7 +593,18 @@ function loadDemoClientsData() {
 // -----------------------------------------------------------------------------
 // 6. Global Window Handlers for Demo Actions & Modals
 // -----------------------------------------------------------------------------
-window.runDemoPayment = async function (merchantId, amount, description, simulatedOutcome = "SUCCEEDED", platformName = "Platform") {
+window.runDemoPayment = async function (merchantIdOrName, amount, description, simulatedOutcome = "SUCCEEDED", platformName = "Platform") {
+  // Resolve merchant platform
+  let resolvedId = merchantIdOrName;
+  let resolvedName = platformName;
+  const match = currentMerchantList.find(
+    (m) => m._id === merchantIdOrName || m.name === merchantIdOrName || m.name === platformName
+  );
+  if (match) {
+    resolvedId = match._id;
+    resolvedName = match.name;
+  }
+
   const feedbackBox = document.getElementById("simulationFeedbackBox");
   feedbackBox.style.display = "block";
 
@@ -514,7 +612,7 @@ window.runDemoPayment = async function (merchantId, amount, description, simulat
   resetStepper();
   document.getElementById("stepNodePending").querySelector(".step-circle").classList.add("active");
   document.getElementById("simulationFeedbackDetails").innerHTML = `
-    <strong>[Step 1: PENDING]</strong> Payment request received from <strong>${platformName}</strong> for ${formatCurrency(amount)}.<br>
+    <strong>[Step 1: PENDING]</strong> Payment request received from <strong>${resolvedName}</strong> for ${formatCurrency(amount)}.<br>
     Verifying <code>x-api-key</code> and acquiring write lock on source account...
   `;
 
@@ -528,14 +626,10 @@ window.runDemoPayment = async function (merchantId, amount, description, simulat
   `;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/demo-checkout`, {
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/demo-checkout`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-dashboard-admin": "true",
-      },
       body: JSON.stringify({
-        merchantId,
+        merchantId: resolvedId,
         amount,
         description,
         simulatedOutcome,
@@ -552,43 +646,43 @@ window.runDemoPayment = async function (merchantId, amount, description, simulat
     const finalCircle = document.getElementById("stepNodeFinal").querySelector(".step-circle");
     const finalLabel = document.getElementById("stepFinalLabel");
 
-    if (tx.status === "SUCCEEDED") {
+    if (tx && tx.status === "SUCCEEDED") {
       finalCircle.classList.add("success");
       finalLabel.textContent = "SUCCEEDED";
       document.getElementById("simulationFeedbackDetails").innerHTML = `
         <div style="color: var(--success); font-weight: 700; margin-bottom: 4px;">✓ Payment Succeeded & Committed</div>
         <div>Transaction ID: <code>${tx._id}</code> | Amount: <strong>${formatCurrency(tx.amount)}</strong></div>
-        <div>Platform: <strong>${platformName}</strong> | Idempotency: <code>${tx.idempotencyKey}</code></div>
+        <div>Platform: <strong>${resolvedName}</strong> | Idempotency: <code>${tx.idempotencyKey}</code></div>
         <div style="margin-top: 4px; font-size: 11.5px; color: var(--text-muted);">State Machine: PENDING &rarr; PROCESSING &rarr; SUCCEEDED (Double-entry balance updated).</div>
       `;
     } else {
       finalCircle.classList.add("failed");
       finalLabel.textContent = "FAILED";
       document.getElementById("simulationFeedbackDetails").innerHTML = `
-        <div style="color: var(--danger); font-weight: 700; margin-bottom: 4px;">✕ Payment Failed (Simulated)</div>
-        <div>Transaction ID: <code>${tx._id}</code> | Reason: ${tx.failureReason || "Declined"}</div>
-        <div style="margin-top: 4px; font-size: 11.5px; color: var(--text-muted);">State Machine: PENDING &rarr; PROCESSING &rarr; FAILED (Session aborted, zero balance deduction).</div>
+        <div style="color: var(--danger); font-weight: 700; margin-bottom: 4px;">✕ Payment Failed</div>
+        <div>Transaction ID: <code>${tx?._id || "N/A"}</code> | Reason: ${tx?.failureReason || json?.message || "Declined"}</div>
+        <div style="margin-top: 4px; font-size: 11.5px; color: var(--text-muted);">State Machine: PENDING &rarr; PROCESSING &rarr; FAILED (Zero balance deduction).</div>
       `;
     }
 
     // Refresh background data
     loadOverviewData();
   } catch (err) {
-    console.error("Demo payment error:", err);
+    console.error("Payment test error:", err);
   }
 };
 
 window.runDemoReversal = async function (platformName) {
   // Find latest succeeded transaction for this platform
-  const txRes = await fetch(`${API_BASE_URL}/api/v1/transactions?limit=20`, {
-    headers: { "x-dashboard-admin": "true" },
-  });
+  const txRes = await apiFetch(`${API_BASE_URL}/api/v1/transactions?limit=20`);
   const txJson = await txRes.json();
   const txList = txJson?.data?.transactions || [];
-  const targetTx = txList.find((tx) => tx.merchant?.name === platformName && tx.status === "SUCCEEDED");
+  const targetTx = txList.find(
+    (tx) => (tx.merchant?.name === platformName || tx.merchant?._id === platformName) && tx.status === "SUCCEEDED"
+  );
 
   if (!targetTx) {
-    alert(`No SUCCEEDED transaction found for ${platformName} to reverse. Please simulate a payment first.`);
+    alert(`No SUCCEEDED transaction found for ${platformName} to reverse. Please test a payment first.`);
     return;
   }
 
@@ -602,12 +696,8 @@ window.runDemoReversal = async function (platformName) {
   `;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/demo-reverse`, {
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/demo-reverse`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-dashboard-admin": "true",
-      },
       body: JSON.stringify({ transactionId: targetTx._id }),
     });
 
@@ -654,12 +744,8 @@ function resetStepper() {
 // -----------------------------------------------------------------------------
 window.toggleMerchantStatus = async function (merchantId, newStatus) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/status`, {
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/status`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "x-dashboard-admin": "true",
-      },
       body: JSON.stringify({ status: newStatus }),
     });
     const json = await res.json();
@@ -678,9 +764,8 @@ window.rotateApiKey = async function (merchantId, merchantName) {
   }
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/rotate-api-key`, {
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/rotate-api-key`, {
       method: "POST",
-      headers: { "x-dashboard-admin": "true" },
     });
     const json = await res.json();
     const newKey = json?.data?.apiKey;
@@ -694,9 +779,7 @@ window.rotateApiKey = async function (merchantId, merchantName) {
 
 window.viewMerchantDetails = async function (merchantId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/statistics`, {
-      headers: { "x-dashboard-admin": "true" },
-    });
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/statistics`);
     const json = await res.json();
     const data = json?.data;
     if (!data) return;
@@ -777,9 +860,7 @@ window.viewMerchantDetails = async function (merchantId) {
 
 window.openDeleteMerchantModal = async function (merchantId) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/statistics`, {
-      headers: { "x-dashboard-admin": "true" },
-    });
+    const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/${merchantId}/statistics`);
     const json = await res.json();
     if (!json.success || !json.data) {
       alert(json.message || "Failed to fetch platform statistics");
@@ -905,7 +986,8 @@ window.viewTxDetails = function (txId) {
 // -----------------------------------------------------------------------------
 // 8. Event Listeners & Modals Binding
 // -----------------------------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await checkAuth();
   initRouter();
 
   // Refresh Button
@@ -1223,12 +1305,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (prevBtn) prevBtn.disabled = true;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/merchants`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-dashboard-admin": "true",
-        },
         body: JSON.stringify({
           name: wizardData.platformName,
           description: wizardData.description,
@@ -1421,9 +1499,8 @@ document.addEventListener("DOMContentLoaded", () => {
     confirmBtn.textContent = "Deleting...";
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/merchants/${id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/${id}`, {
         method: "DELETE",
-        headers: { "x-dashboard-admin": "true" },
       });
       const json = await res.json();
 

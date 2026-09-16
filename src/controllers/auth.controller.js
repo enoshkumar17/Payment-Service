@@ -70,7 +70,7 @@ const loginUser = asyncHandler(async(req,res)=>{
   {
     throw new ApiError(404,"User not Registered")
   }
-  if(!user.authProvider === "Google")
+  if(user.authProvider === "Google")
   {
     throw new ApiError(400,"This account was created by Google, Please login with Google")
   }
@@ -130,24 +130,42 @@ const forgotPassword = asyncHandler(async(req,res)=>{
     );
 }) 
 
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        _id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        authProvider: req.user.authProvider,
+      },
+      "Current user fetched successfully"
+    )
+  );
+});
+
 const logoutUser = asyncHandler(async(req,res)=>{
   const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","")
 
-  if(!token)
-  {
-    return res.status(200)
-              .json(new ApiResponse(200,{},"user logged out already"))
-  }
+  const cookieOptions = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  };
 
-  await TokenBlacklist.create({
-    token:token
-  })
+  if(token)
+  {
+    await TokenBlacklist.create({
+      token:token
+    });
+  }
   
-  res.clearCookie("token")
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
   
   return res.status(200)
             .json(new ApiResponse(200,{},"User LoggedOut successfully"))
-
 })
 
 export {
@@ -155,5 +173,6 @@ export {
   loginUser,
   logoutUser,
   generateAccessAndRefreshTokens,
-  forgotPassword
+  forgotPassword,
+  getCurrentUser,
 }

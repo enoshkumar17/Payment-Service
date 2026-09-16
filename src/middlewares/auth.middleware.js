@@ -5,14 +5,19 @@ import { User } from "../models/user.model.js";
 import { TokenBlacklist } from "../models/blackList.model.js";
 
 const verifyUser = asyncHandler(async(req,res,next)=>{
-  // Support local demo mode / dashboard access without requiring manual JWT cookie setup
-  if (req.header("x-dashboard-admin") === "true") {
+  // Support local demo mode only during offline test runs
+  if (global.IS_LOCAL_DEMO && process.env.NODE_ENV !== "production" && req.header("x-dashboard-admin") === "true") {
     req.user = {
       _id: "demo_admin_user_001",
       username: "platform_admin",
       email: "admin@paymentplatform.local",
       systemUser: true,
     };
+    return next();
+  }
+
+  // Support authenticated session from Passport
+  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
     return next();
   }
 
@@ -48,8 +53,8 @@ const verifyUser = asyncHandler(async(req,res,next)=>{
 })
 
 const verifySystemUser = asyncHandler(async(req,res,next)=>{
-  // Support local demo mode / dashboard access without requiring manual JWT cookie setup
-  if (req.header("x-dashboard-admin") === "true") {
+  // Support local demo mode only during offline test runs
+  if (global.IS_LOCAL_DEMO && process.env.NODE_ENV !== "production" && req.header("x-dashboard-admin") === "true") {
     req.user = {
       _id: "demo_admin_user_001",
       username: "platform_admin",
@@ -57,6 +62,13 @@ const verifySystemUser = asyncHandler(async(req,res,next)=>{
       systemUser: true,
     };
     return next();
+  }
+
+  // Support authenticated system session from Passport
+  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+    if (req.user.systemUser) {
+      return next();
+    }
   }
 
   const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ","")

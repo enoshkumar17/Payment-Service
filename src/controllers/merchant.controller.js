@@ -1,10 +1,18 @@
 import mongoose from "mongoose";
+import crypto from "node:crypto";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Merchant } from "../models/merchant.model.js";
 import { Transaction } from "../models/transaction.model.js";
-import { PaymentStatus } from "../services/paymentStateMachine.js";
+import { User } from "../models/user.model.js";
+import { Account } from "../models/account.model.js";
+import { Ledger } from "../models/ledger.model.js";
+import {
+  PaymentStatus,
+  assertValidTransition,
+  transitionTransaction,
+} from "../services/paymentStateMachine.js";
 import { localDemoStore } from "../services/localDemoStore.js";
 
 /**
@@ -85,15 +93,80 @@ export const getAllMerchants = asyncHandler(async (req, res) => {
     .select("+apiKey")
     .sort({ createdAt: -1 });
 
-  const sanitizedMerchants = merchants.map((m) => ({
-    _id: m._id,
-    name: m.name,
-    description: m.description,
-    status: m.status,
-    apiKeyMasked: m.getMaskedApiKey(),
-    createdAt: m.createdAt,
-    updatedAt: m.updatedAt,
-  }));
+  // Compute metrics for each merchant from MongoDB transactions
+  const merchantIds = merchants.map((m) => m._id);
+  const statsAgg = await Transaction.aggregate([
+    { $match: { merchant: { $in: merchantIds } } },
+    {
+      $group: {
+        _id: { merchant: "$merchant", status: "$status" },
+        count: { $sum: 1 },
+        totalVolume: {
+          $sum: {
+            $cond: [{ $eq: ["$status", PaymentStatus.SUCCEEDED] }, "$amount", 0],
+          },
+        },
+      },
+    },
+  ]);
+
+  const statsMap = {};
+  for (const item of statsAgg) {
+    const mId = item._id.merchant.toString();
+    if (!statsMap[mId]) {
+      statsMap[mId] = {
+        totalTransactions: 0,
+        successfulAmount: 0,
+        successfulTransactions: 0,
+        failedTransactions: 0,
+        reversedTransactions: 0,
+        pendingTransactions: 0,
+      };
+    }
+    statsMap[mId].totalTransactions += item.count;
+    if (item._id.status === PaymentStatus.SUCCEEDED) {
+      statsMap[mId].successfulTransactions += item.count;
+      statsMap[mId].successfulAmount += item.totalVolume;
+    } else if (item._id.status === PaymentStatus.FAILED) {
+      statsMap[mId].failedTransactions += item.count;
+    } else if (item._id.status === PaymentStatus.REVERSED) {
+      statsMap[mId].reversedTransactions += item.count;
+    } else if (
+      item._id.status === PaymentStatus.PENDING ||
+      item._id.status === PaymentStatus.PROCESSING
+    ) {
+      statsMap[mId].pendingTransactions += item.count;
+    }
+  }
+
+  const sanitizedMerchants = merchants.map((m) => {
+    const s = statsMap[m._id.toString()] || {
+      totalTransactions: 0,
+      successfulAmount: 0,
+      successfulTransactions: 0,
+      failedTransactions: 0,
+      reversedTransactions: 0,
+      pendingTransactions: 0,
+    };
+    const rate =
+      s.totalTransactions > 0
+        ? ((s.successfulTransactions / s.totalTransactions) * 100).toFixed(1)
+        : "0.0";
+
+    return {
+      _id: m._id,
+      name: m.name,
+      description: m.description,
+      status: m.status,
+      apiKeyMasked: m.getMaskedApiKey(),
+      createdAt: m.createdAt,
+      updatedAt: m.updatedAt,
+      metrics: {
+        ...s,
+        successRate: `${rate}%`,
+      },
+    };
+  });
 
   return res.status(200).json(
     new ApiResponse(200, sanitizedMerchants, "Merchants fetched successfully")
@@ -475,26 +548,218 @@ export const getMerchantStatistics = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Helper to ensure test accounts exist for payment testing in MongoDB.
+ */
+async function getOrCreateTestAccounts(merchant) {
+  let systemUser = await User.findOne({ email: "system.test@payplatform.internal" });
+  if (!systemUser) {
+    systemUser = await User.create({
+      name: "PayPlatform System",
+      email: "system.test@payplatform.internal",
+      authProvider: "Local",
+      systemUser: true,
+      verifiedUser: true,
+    });
+  }
+
+  let customerAccount = await Account.findOne({ username: "Demo Customer", user: systemUser._id });
+  if (!customerAccount) {
+    customerAccount = await Account.create({
+      user: systemUser._id,
+      username: "Demo Customer",
+      currency: "INR",
+      status: "ACTIVE",
+    });
+  }
+
+  const merchantAccountName = `${merchant.name} Settlement`;
+  let merchantAccount = await Account.findOne({ username: merchantAccountName, user: systemUser._id });
+  if (!merchantAccount) {
+    merchantAccount = await Account.create({
+      user: systemUser._id,
+      username: merchantAccountName,
+      currency: "INR",
+      status: merchant.status === "ACTIVE" ? "ACTIVE" : "FROZEN",
+    });
+  } else if (merchantAccount.status !== (merchant.status === "ACTIVE" ? "ACTIVE" : "FROZEN")) {
+    merchantAccount.status = merchant.status === "ACTIVE" ? "ACTIVE" : "FROZEN";
+    await merchantAccount.save();
+  }
+
+  return { customerAccount, merchantAccount };
+}
+
+/**
  * 8. Simulate demo checkout from a client application (MovieHub, FoodBox, EventBook).
+ * Reuses the canonical payment state machine (PENDING -> PROCESSING -> SUCCEEDED / FAILED)
+ * and double-entry ledger flow.
  */
 export const simulateDemoCheckout = asyncHandler(async (req, res) => {
   const { merchantId, amount, description, simulatedOutcome } = req.body;
-  const tx = localDemoStore.simulateDemoPayment({
-    merchantId,
-    amount,
-    description,
-    simulatedOutcome,
+
+  if (global.IS_LOCAL_DEMO) {
+    const tx = localDemoStore.simulateDemoPayment({
+      merchantId,
+      amount,
+      description,
+      simulatedOutcome,
+    });
+    return res.status(201).json(new ApiResponse(201, tx, "Demo transaction simulated successfully"));
+  }
+
+  // Find merchant platform
+  let merchant;
+  if (merchantId && mongoose.Types.ObjectId.isValid(merchantId)) {
+    merchant = await Merchant.findById(merchantId);
+  }
+  if (!merchant && merchantId) {
+    const cleanedName = merchantId.replace(/^mch_\d+_/, "");
+    merchant = await Merchant.findOne({
+      $or: [
+        { name: merchantId },
+        { name: new RegExp(`^${cleanedName}$`, "i") },
+      ],
+    });
+  }
+  if (!merchant) {
+    merchant = await Merchant.findOne({ status: "ACTIVE" });
+  }
+  if (!merchant) {
+    throw new ApiError(404, "Merchant platform not found");
+  }
+
+  const { customerAccount, merchantAccount } = await getOrCreateTestAccounts(merchant);
+
+  const idempotencyKey = `idem_${merchant.name.toLowerCase()}_${Date.now()}_${crypto.randomBytes(3).toString("hex")}`;
+  const numAmount = Number(amount) || 250;
+
+  // Step 1: Create transaction in PENDING
+  let tx = await Transaction.create({
+    merchant: merchant._id,
+    fromAccount: customerAccount._id,
+    toAccount: merchantAccount._id,
+    amount: numAmount,
+    status: PaymentStatus.PENDING,
+    idempotencyKey,
   });
-  return res.status(201).json(new ApiResponse(201, tx, "Demo transaction simulated successfully"));
+
+  // Step 2: Transition PENDING -> PROCESSING
+  tx = await transitionTransaction(tx._id, PaymentStatus.PENDING, PaymentStatus.PROCESSING);
+
+  // Step 3: Check outcome or merchant status
+  if (simulatedOutcome === "FAILED" || merchant.status !== "ACTIVE") {
+    const failureReason =
+      merchant.status !== "ACTIVE"
+        ? "Merchant platform is inactive"
+        : "Simulated bank card decline";
+
+    tx = await transitionTransaction(
+      tx._id,
+      PaymentStatus.PROCESSING,
+      PaymentStatus.FAILED
+    );
+
+    const populatedTx = await Transaction.findById(tx._id)
+      .populate("merchant", "name status")
+      .populate("fromAccount", "username currency")
+      .populate("toAccount", "username currency");
+
+    const responseData = populatedTx.toObject();
+    responseData.failureReason = failureReason;
+
+    return res.status(201).json(
+      new ApiResponse(201, responseData, "Payment simulation failed as requested")
+    );
+  }
+
+  // SUCCEEDED outcome: Write double-entry ledger entries
+  await Ledger.create([
+    {
+      account: customerAccount._id,
+      amount: numAmount,
+      transaction: tx._id,
+      type: "Debit",
+    },
+    {
+      account: merchantAccount._id,
+      amount: numAmount,
+      transaction: tx._id,
+      type: "Credit",
+    },
+  ]);
+
+  tx = await transitionTransaction(
+    tx._id,
+    PaymentStatus.PROCESSING,
+    PaymentStatus.SUCCEEDED
+  );
+
+  const populatedTx = await Transaction.findById(tx._id)
+    .populate("merchant", "name status")
+    .populate("fromAccount", "username currency")
+    .populate("toAccount", "username currency");
+
+  return res.status(201).json(
+    new ApiResponse(201, populatedTx, "Demo transaction simulated successfully")
+  );
 });
 
 /**
  * 9. Simulate demo reversal for a transaction.
+ * Reuses the canonical payment state machine (SUCCEEDED -> REVERSED) and compensating ledger entries.
  */
 export const simulateDemoReversal = asyncHandler(async (req, res) => {
   const { transactionId } = req.body;
-  const tx = localDemoStore.simulateDemoReversal(transactionId);
-  return res.status(200).json(new ApiResponse(200, tx, "Demo reversal simulated successfully"));
+
+  if (global.IS_LOCAL_DEMO) {
+    const tx = localDemoStore.simulateDemoReversal(transactionId);
+    return res.status(200).json(new ApiResponse(200, tx, "Demo reversal simulated successfully"));
+  }
+
+  let targetTx;
+  if (transactionId && mongoose.Types.ObjectId.isValid(transactionId)) {
+    targetTx = await Transaction.findById(transactionId);
+  } else {
+    // If not a valid ObjectId, find most recent SUCCEEDED transaction
+    targetTx = await Transaction.findOne({ status: PaymentStatus.SUCCEEDED }).sort({ createdAt: -1 });
+  }
+
+  if (!targetTx) {
+    throw new ApiError(404, "Transaction not found for reversal");
+  }
+
+  assertValidTransition(targetTx.status, PaymentStatus.REVERSED);
+
+  const reversedTx = await transitionTransaction(
+    targetTx._id,
+    PaymentStatus.SUCCEEDED,
+    PaymentStatus.REVERSED
+  );
+
+  // Compensating double-entry ledger entries
+  await Ledger.create([
+    {
+      account: targetTx.fromAccount,
+      amount: targetTx.amount,
+      transaction: targetTx._id,
+      type: "Credit",
+    },
+    {
+      account: targetTx.toAccount,
+      amount: targetTx.amount,
+      transaction: targetTx._id,
+      type: "Debit",
+    },
+  ]);
+
+  const populated = await Transaction.findById(reversedTx._id)
+    .populate("merchant", "name status")
+    .populate("fromAccount", "username currency")
+    .populate("toAccount", "username currency");
+
+  return res.status(200).json(
+    new ApiResponse(200, populated, "Transaction reversed successfully")
+  );
 });
 
 /**
