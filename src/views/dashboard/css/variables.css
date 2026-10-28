@@ -1,0 +1,66 @@
+/**
+ * PayPlatform Design Tokens & Theme Variables
+ * Clean minimal aesthetic matching Credor Bank reference: Pure white (#ffffff), solid black accents (#111111), and lively pastel cards.
+ */
+:root {
+  /* Surfaces & Canvas (Pure single white everywhere) */
+  --bg-main: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-surface-subtle: #f9f9f9;
+  --bg-surface-hover: #f5f5f5;
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #f0f0f0;
+  --sidebar-width: 220px;
+
+  /* Typography Colors */
+  --text-main: #111111;
+  --text-secondary: #404040;
+  --text-muted: #737373;
+  --text-light: #a3a3a3;
+  --text-inverse: #ffffff;
+
+  /* Borders (Whisper thin, non-intrusive) */
+  --border-color: #f0f0f0;
+  --border-strong: #e5e5e5;
+  --border-focus: #111111;
+
+  /* Primary Accent: Solid Black */
+  --primary: #111111;
+  --primary-hover: #000000;
+  --primary-subtle: #f5f5f5;
+
+  /* Pastel Card Colors (Exact match to Credor Bank reference) */
+  --card-lilac-bg: #fae8ff;
+  --card-lilac-border: #f5d0fe;
+  --card-lilac-text: #86198f;
+
+  --card-wheat-bg: #fef3c7;
+  --card-wheat-border: #fde68a;
+  --card-wheat-text: #78350f;
+
+  --card-sky-bg: #e0f2fe;
+  --card-sky-border: #bae6fd;
+  --card-sky-text: #0369a1;
+
+  /* Status Colors */
+  --success: #059669;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+
+  --danger: #dc2626;
+  --danger-bg: #fff1f2;
+  --danger-border: #fecdd3;
+
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  --purple: #7e22ce;
+  --purple-bg: #faf5ff;
+  --purple-border: #e9d5ff;
+
+  /* Typography & Transitions */
+  --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --transition-fast: 0.15s ease;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}

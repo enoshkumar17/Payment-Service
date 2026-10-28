@@ -1,0 +1,447 @@
+/**
+ * PayPlatform Components Styles
+ * Credor Bank Minimal Aesthetic: 3 pastel balance cards, lively horizontal platform tiles, clean data tables.
+ */
+
+/* 1. The 3 Vibrant Pastel Balance Cards (Exact match to Credor Bank Debit/Credit cards) */
+.metrics-grid-pastel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .metrics-grid-pastel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pastel-card {
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 155px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.pastel-card:hover {
+  transform: translateY(-2px);
+}
+
+.pastel-card-lilac {
+  background-color: var(--card-lilac-bg);
+  border: 1px solid var(--card-lilac-border);
+  color: var(--card-lilac-text);
+}
+
+.pastel-card-wheat {
+  background-color: var(--card-wheat-bg);
+  border: 1px solid var(--card-wheat-border);
+  color: var(--card-wheat-text);
+}
+
+.pastel-card-sky {
+  background-color: var(--card-sky-bg);
+  border: 1px solid var(--card-sky-border);
+  color: var(--card-sky-text);
+}
+
+.pastel-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pastel-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.pastel-card-tag {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.pastel-card-value {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  margin: 12px 0 6px;
+}
+
+.pastel-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* 2. Client Platform Tiles (Horizontal single row matching "My stocks" in Credor Bank) */
+.section-container {
+  margin-bottom: 28px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.2px;
+}
+
+.section-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.platforms-summary-grid,
+.merchants-detailed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .platforms-summary-grid,
+  .merchants-detailed-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.platform-summary-card {
+  background-color: #f9f9f9;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all var(--transition-fast);
+}
+
+.platform-summary-card:hover {
+  background-color: #ffffff;
+  border-color: var(--border-strong);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.platform-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.platform-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.platform-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.platform-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.platform-sub-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.platform-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #ededed;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 12px 0;
+  text-align: center;
+}
+
+.stat-item-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+
+.stat-item-val {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 1px;
+}
+
+.platform-key-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #ededed;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: monospace;
+  margin-bottom: 12px;
+}
+
+.platform-actions-row {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+}
+
+/* 3. Action Buttons - Crisp Solid Black Primary */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: #111111;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #000000;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  border-color: #e5e5e5;
+  color: var(--text-main);
+}
+
+.btn-secondary:hover {
+  background-color: #f9f9f9;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 11.5px;
+}
+
+.btn-xs {
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 6px;
+  flex: 1;
+}
+
+.btn-deactivate {
+  background-color: #ffffff;
+  border-color: #fecaca;
+  color: var(--danger);
+}
+
+.btn-deactivate:hover {
+  background-color: #fef2f2;
+}
+
+.btn-activate {
+  background-color: #ffffff;
+  border-color: #bbf7d0;
+  color: var(--success);
+}
+
+.btn-activate:hover {
+  background-color: #f0fdf4;
+}
+
+/* 4. Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.badge-succeeded, .badge-active {
+  background-color: #ecfdf5;
+  color: #047857;
+}
+
+.badge-failed, .badge-inactive {
+  background-color: #fff1f2;
+  color: #be123c;
+}
+
+.badge-reversed {
+  background-color: #faf5ff;
+  color: #7e22ce;
+}
+
+.badge-pending {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+.badge-processing {
+  background-color: #f0f9ff;
+  color: #0369a1;
+}
+
+/* 5. Minimal Data Table */
+.table-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12.5px;
+}
+
+.data-table th {
+  background-color: #fafafa;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  color: var(--text-main);
+}
+
+.data-table tbody tr:hover {
+  background-color: #fcfcfc;
+}
+
+.data-table code {
+  font-family: monospace;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+/* 6. Client Platforms Simulator Grid */
+.demo-clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.demo-app-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.demo-app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.app-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.app-category {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.demo-product-box {
+  background-color: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.product-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.product-price {
+  font-size: 16px;
+  font-weight: 800;
+}
