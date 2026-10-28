@@ -147,10 +147,12 @@ dotenv.config({
 =========================================================================
                         V2
 =========================================================================
+# 1. Google OAuth, Passeord reset, email verification
 
-
-
-
+->  passport is authentication middleware, basically gets done all process without one by one manualyy by user i.e sending user to google , getting token , exchange token , info .... 
+-> passport uses google strategy from "passport-google-oauth20" where passport gets to know all process and dones it.
+-> we will use express-sessions or jwt 
+-> after  getting data from google check in db whether the user exists? if yes then login if not then create account send welcome email
 
 
 
@@ -177,4 +179,252 @@ dotenv.config({
 
 1. resend
     -> after user registration , send verify link to user account and also welcome email
+
+=========================================================================
+                        V3 — Multi-Merchant Payment Infrastructure
+=========================================================================
+
+## Overview
+
+This project has been extended from a single-app payment service into a reusable **Multi-Merchant Payment Backend**. Multiple independent demo client applications (e.g., **MovieHub**, **FoodBox**, **EventBook**) can integrate with this centralized payment engine using secure merchant API keys (`x-api-key`).
+
+### Key Highlights
+- **Merchant API Key Authentication**: Cryptographically secure keys (`mch_live_<48_hex_chars>`) generated via Node.js native `crypto.randomBytes(24)`.
+- **API Key Masking & Rotation**: Raw keys are shown only once at creation or rotation; queries and listings return masked keys (`mch_live_...xxxx`).
+- **Dual-Layer Authorization**: A merchant API key identifies the client platform, while customer session/JWT authentication (`req.user`) ensures that accounts can only be debited by their rightful owners.
+- **Strict 5-State Payment State Machine**: Enforces valid transitions (`PENDING -> PROCESSING -> SUCCEEDED | FAILED`, and `SUCCEEDED -> REVERSED`).
+- **Double-Entry Ledger & Concurrency Safety**: Guaranteed zero-sum debits/credits with database-level row locking (`Account.findOneAndUpdate`) to eliminate race conditions and double-spending.
+- **Platform & Merchant Dashboards**: Real-time aggregation pipelines computing gross transaction volume, transaction counts, status breakdowns, and per-merchant distribution metrics.
+- **Backward Compatibility**: Direct user-to-user transfers without an API key remain fully functional (`merchant: null`).
+
+---
+
+## Multi-Merchant Integration Architecture
+
+```
++-------------------+      +-------------------+      +-------------------+
+|  MovieHub App     |      |   FoodBox App     |      |  EventBook App    |
+| (x-api-key: mch_1)|      | (x-api-key: mch_2)|      | (x-api-key: mch_3)|
++---------+---------+      +---------+---------+      +---------+---------+
+          |                          |                          |
+          +--------------------+     |     +--------------------+
+                               |     |     |
+                               v     v     v
+                  +--------------------------------+
+                  |  Payment Gateway / API Router  |
+                  +--------------------------------+
+                               |
+                               +--> optionalMerchantAuth / verifyMerchantApiKey
+                               |    (Validates active merchant & attaches req.merchant)
+                               |
+                               +--> verifyUser
+                               |    (Validates customer session & account ownership)
+                               |
+                               v
+                  +--------------------------------+
+                  |  Payment State Machine Engine  |
+                  |  (PENDING -> PROCESSING ->     |
+                  |   SUCCEEDED / FAILED)          |
+                  +--------------------------------+
+                               |
+                               v
+             +-----------------+-----------------+
+             |                                   |
+             v                                   v
++------------------------+          +------------------------+
+|  Double-Entry Ledger   |          |    MongoDB Atlas DB    |
+|  Debit Account A (-X)  |          | Transactions, Accounts,|
+|  Credit Account B (+X) |          | Ledgers, Merchants     |
++------------------------+          +------------------------+
+```
+
+---
+
+## API Endpoints Reference
+
+### 1. Merchant Management (`/api/v1/merchants`)
+
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| `POST` | `/api/v1/merchants` | Register a new merchant platform | Admin / System |
+| `GET` | `/api/v1/merchants` | List all registered merchants (masked keys) | Admin / System |
+| `GET` | `/api/v1/merchants/:merchantId` | Get merchant profile details | Admin / System |
+| `PATCH` | `/api/v1/merchants/:merchantId/status` | Activate or deactivate merchant (`ACTIVE`/`INACTIVE`) | Admin / System |
+| `POST` | `/api/v1/merchants/:merchantId/rotate-key` | Invalidate existing key & generate new raw key | Admin / System |
+| `GET` | `/api/v1/merchants/statistics` | Platform-wide volume, status breakdown & merchant breakdown | Admin / System |
+| `GET` | `/api/v1/merchants/:merchantId/statistics` | Merchant-specific transaction volume & status breakdown | Admin / System |
+
+#### Example: Register a Merchant
+```http
+POST /api/v1/merchants
+Content-Type: application/json
+
+{
+  "name": "MovieHub",
+  "description": "Online movie ticketing platform"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "statusCode": 201,
+  "data": {
+    "_id": "66e1b7c12f4a5c0012a4e901",
+    "name": "MovieHub",
+    "description": "Online movie ticketing platform",
+    "status": "ACTIVE",
+    "apiKey": "mch_live_4b8f72a1e0c395d821f06a92cb71a39d84e1a0b3f5c9e2d1",
+    "createdAt": "2026-09-11T20:00:00.000Z"
+  },
+  "message": "Merchant registered successfully. Save the API key securely; it will not be shown again.",
+  "success": true
+}
+```
+
+---
+
+### 2. Initiating a Payment from an External App
+
+When MovieHub or FoodBox initiates a checkout transaction:
+- Pass the merchant API key in the `x-api-key` header.
+- Pass the logged-in user's authorization token (Bearer JWT or session cookie).
+- Include an `idempotencyKey` in the request body to prevent duplicate payments.
+
+```http
+POST /api/v1/transactions/new-transaction
+x-api-key: mch_live_4b8f72a1e0c395d821f06a92cb71a39d84e1a0b3f5c9e2d1
+Authorization: Bearer <user_jwt_token>
+Content-Type: application/json
+
+{
+  "fromAccount": "66e1b7c12f4a5c0012a4e111",
+  "toAccount": "66e1b7c12f4a5c0012a4e222",
+  "amount": 450,
+  "idempotencyKey": "order_moviehub_ticket_98234"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "statusCode": 201,
+  "data": {
+    "_id": "66e1b7c12f4a5c0012a4e333",
+    "fromAccount": "66e1b7c12f4a5c0012a4e111",
+    "toAccount": "66e1b7c12f4a5c0012a4e222",
+    "amount": 450,
+    "status": "SUCCEEDED",
+    "merchant": "66e1b7c12f4a5c0012a4e901",
+    "idempotencyKey": "order_moviehub_ticket_98234",
+    "createdAt": "2026-09-11T20:05:00.000Z"
+  },
+  "message": "Transaction successful",
+  "success": true
+}
+```
+
+---
+
+### 3. Transaction History & Filtering (`GET /api/v1/transactions`)
+
+Query transactions filtered by merchant, status, or pagination:
+```http
+GET /api/v1/transactions?merchantId=66e1b7c12f4a5c0012a4e901&status=SUCCEEDED&page=1&limit=20
+Authorization: Bearer <user_jwt_token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "transactions": [
+      {
+        "_id": "66e1b7c12f4a5c0012a4e333",
+        "amount": 450,
+        "status": "SUCCEEDED",
+        "merchant": {
+          "_id": "66e1b7c12f4a5c0012a4e901",
+          "name": "MovieHub",
+          "status": "ACTIVE"
+        },
+        "fromAccount": { "_id": "66e1b7c12f4a5c0012a4e111", "status": "ACTIVE" },
+        "toAccount": { "_id": "66e1b7c12f4a5c0012a4e222", "status": "ACTIVE" }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 1,
+      "totalPages": 1
+    }
+  },
+  "message": "Transactions retrieved successfully",
+  "success": true
+}
+```
+
+---
+
+### 4. Platform Analytics & Dashboard (`GET /api/v1/merchants/statistics`)
+
+Provides live aggregations across all transactions and merchants:
+```http
+GET /api/v1/merchants/statistics
+```
+
+**Response (200 OK):**
+```json
+{
+  "statusCode": 200,
+  "data": {
+    "totalVolume": 145000,
+    "totalTransactions": 320,
+    "statusBreakdown": {
+      "SUCCEEDED": 300,
+      "PENDING": 5,
+      "PROCESSING": 3,
+      "FAILED": 10,
+      "REVERSED": 2
+    },
+    "merchants": {
+      "total": 5,
+      "active": 4,
+      "inactive": 1
+    },
+    "merchantsBreakdown": [
+      {
+        "merchantId": "66e1b7c12f4a5c0012a4e901",
+        "merchantName": "MovieHub",
+        "transactionCount": 180,
+        "successfulAmount": 95000
+      },
+      {
+        "merchantId": "66e1b7c12f4a5c0012a4e902",
+        "merchantName": "FoodBox",
+        "transactionCount": 140,
+        "successfulAmount": 50000
+      }
+    ]
+  },
+  "message": "Platform statistics retrieved successfully",
+  "success": true
+}
+```
+
+---
+
+## Core Financial & Concurrency Invariants
+
+1. **State Machine Integrity**:
+   - `PENDING -> PROCESSING -> SUCCEEDED`: Happy path payment.
+   - `PROCESSING -> FAILED`: System error during processing.
+   - `SUCCEEDED -> REVERSED`: Authorized refund/chargeback with compensating ledger entries.
+   - Terminal states (`FAILED`, `REVERSED`) cannot transition further.
+2. **Double-Spend Prevention**:
+   - Every debit operation uses MongoDB write locking (`Account.findOneAndUpdate`) with exact session binding.
+   - Available balance is strictly computed from double-entry ledger records within the transaction session before debits occur.
+3. **Idempotency**:
+   - Unique sparse index on `idempotencyKey` prevents duplicate transaction creation even during high-frequency concurrent retries.
 

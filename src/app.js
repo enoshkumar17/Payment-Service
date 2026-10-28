@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import passport from "./config/passport.js"
 
 import cors from "cors";
+import mongoose from "mongoose";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +43,17 @@ app.use(
     },
   })
 );
+
+// Lightweight health check endpoint for monitoring & keep-alive pings (Cron-job / UptimeRobot)
+app.get(["/health", "/api/v1/health"], (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "payment-service",
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? "connected" : "connecting/fallback",
+  });
+});
 
 app.use(express.static(path.join(__dirname,"views")))
 

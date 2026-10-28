@@ -51,11 +51,46 @@ function updateUserUI(user) {
   }
 }
 
+// Server Wake Watcher for Render Free-Tier Cold Starts
+let wakeTimeout = null;
+
+function showWakingBanner() {
+  const el = document.getElementById("serverWakingBanner");
+  if (el) el.style.display = "flex";
+  const dot = document.querySelector(".top-status-strip .status-dot");
+  const text = document.querySelector(".top-status-strip .status-text");
+  if (dot) dot.style.background = "#f59e0b";
+  if (text) text.textContent = "Waking Cloud Server...";
+}
+
+function hideWakingBanner() {
+  if (wakeTimeout) {
+    clearTimeout(wakeTimeout);
+    wakeTimeout = null;
+  }
+  const el = document.getElementById("serverWakingBanner");
+  if (el) el.style.display = "none";
+  const dot = document.querySelector(".top-status-strip .status-dot");
+  const text = document.querySelector(".top-status-strip .status-text");
+  if (dot) dot.style.background = "";
+  if (text) text.textContent = "Production Cloud";
+}
+
+function startWakeWatcher() {
+  if (!wakeTimeout) {
+    wakeTimeout = setTimeout(() => {
+      showWakingBanner();
+    }, 1500);
+  }
+}
+
 async function checkAuth() {
+  startWakeWatcher();
   try {
     const res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
       credentials: "include",
     });
+    hideWakingBanner();
     if (res.ok) {
       const data = await res.json();
       currentUser = data?.data;
@@ -67,6 +102,7 @@ async function checkAuth() {
       return false;
     }
   } catch (err) {
+    hideWakingBanner();
     console.warn("Auth check error or offline mode:", err);
     showAuthScreen();
     return false;
@@ -94,13 +130,16 @@ async function apiFetch(url, options = {}) {
     headers,
   };
 
+  startWakeWatcher();
   try {
     const response = await fetch(url, mergedOptions);
+    hideWakingBanner();
     if (response.status === 401) {
       showAuthScreen();
     }
     return response;
   } catch (error) {
+    hideWakingBanner();
     console.error(`Network error requesting ${url}:`, error);
     throw error;
   }
