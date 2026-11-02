@@ -48,29 +48,46 @@ export function hideAuthScreen() {
 }
 
 export function updateUserUI(user) {
-  const userPill = document.getElementById("userPill");
+  const avatarEl = document.getElementById("userAvatarInitials");
+  const nameEl = document.getElementById("topUserName");
   const logoutBtn = document.getElementById("logoutBtn");
+  const logoutLabel = document.getElementById("logoutBtnLabel");
+  const userProfileBtn = document.getElementById("userProfileBtn");
+  const userDropdown = document.getElementById("userDropdownMenu");
 
-  if (userPill) {
-    if (state.isGuestMode) {
-      userPill.textContent = "Demo Client ▾";
-      userPill.title = "Viewing in Demo Client Mode. Click to sign in as Admin.";
-      userPill.onclick = () => showAuthScreen();
-    } else {
-      const displayName = user?.email || user?.name || "Admin";
-      userPill.textContent = `${displayName} ▾`;
-      userPill.title = `Signed in as ${user?.email || user?.name}`;
-      userPill.onclick = null;
-    }
+  if (userProfileBtn && userDropdown && !userProfileBtn._bound) {
+    userProfileBtn._bound = true;
+    userProfileBtn.onclick = (e) => {
+      e.stopPropagation();
+      userDropdown.classList.toggle("open");
+    };
+    document.addEventListener("click", () => {
+      userDropdown.classList.remove("open");
+    });
+  }
+
+  if (state.isGuestMode) {
+    if (avatarEl) avatarEl.textContent = "EK";
+    if (nameEl) nameEl.textContent = "Enosh K.";
+    if (logoutLabel) logoutLabel.textContent = "Admin Sign In";
+  } else if (user) {
+    const displayName = user.name || (user.email ? user.email.split("@")[0] : "Enosh K.");
+    const initials = displayName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "EK";
+    if (avatarEl) avatarEl.textContent = initials;
+    if (nameEl) nameEl.textContent = displayName;
+    if (logoutLabel) logoutLabel.textContent = "Logout";
+  } else {
+    if (avatarEl) avatarEl.textContent = "EK";
+    if (nameEl) nameEl.textContent = "Enosh K.";
+    if (logoutLabel) logoutLabel.textContent = "Admin Sign In";
   }
 
   if (logoutBtn) {
-    logoutBtn.style.display = "inline-flex";
-    const labelSpan = logoutBtn.querySelector("span");
-    if (labelSpan) {
-      labelSpan.textContent = state.isGuestMode ? "Admin Sign In" : "Logout";
-    }
-
     logoutBtn.onclick = async () => {
       if (state.isGuestMode) {
         showAuthScreen();

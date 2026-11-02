@@ -1,6 +1,6 @@
 /**
  * PayPlatform Design Tokens & Theme Variables
- * Clean minimal aesthetic matching Credor Bank reference: Pure white (#ffffff), solid black accents (#111111), and lively pastel cards.
+ * Credor Bank Minimal Aesthetic: Pure white canvas, soft luxury charcoal black typography (#1e2229), and gentle pastel cards.
  */
 :root {
   /* Surfaces & Canvas (Pure single white everywhere) */
@@ -12,35 +12,35 @@
   --sidebar-border: #f0f0f0;
   --sidebar-width: 236px;
 
-  /* Typography Colors - Credor Bank Solid Black Primary (No washed-out grey pencil shades) */
-  --text-main: #111111;
-  --text-secondary: #1f1f1f;
-  --text-muted: #374151;
-  --text-light: #4b5563;
+  /* Typography Colors - Soft Luxury Dark Slate (Gentle on eyes, high readability) */
+  --text-main: #1e2229;
+  --text-secondary: #2d3239;
+  --text-muted: #555b68;
+  --text-light: #6e7687;
   --text-inverse: #ffffff;
 
   /* Borders (Clean, whisper-thin, crisp) */
   --border-color: #e5e5e5;
   --border-strong: #d1d5db;
-  --border-focus: #111111;
+  --border-focus: #1e2229;
 
-  /* Primary Accent: Solid Black */
-  --primary: #111111;
-  --primary-hover: #000000;
-  --primary-subtle: #f3f4f6;
+  /* Primary Accent: Soft Luxury Charcoal Black */
+  --primary: #1e2229;
+  --primary-hover: #111418;
+  --primary-subtle: #f4f5f7;
 
   /* Pastel Card Colors (Exact match to Credor Bank reference) */
   --card-lilac-bg: #fae8ff;
   --card-lilac-border: #f5d0fe;
-  --card-lilac-text: #111111;
+  --card-lilac-text: #1e2229;
 
   --card-wheat-bg: #fef3c7;
   --card-wheat-border: #fde68a;
-  --card-wheat-text: #111111;
+  --card-wheat-text: #1e2229;
 
   --card-sky-bg: #e0f2fe;
   --card-sky-border: #bae6fd;
-  --card-sky-text: #111111;
+  --card-sky-text: #1e2229;
 
   /* Status Colors */
   --success: #059669;

@@ -45,7 +45,7 @@ body {
 
 /* Solid Black Brand Logo Box (Matching CREDOR BANK) */
 .brand-box {
-  background-color: #111111;
+  background-color: #1e2229;
   color: #ffffff;
   width: 100%;
   padding: 12px 14px;
@@ -104,7 +104,7 @@ body {
   margin-left: auto;
   font-size: 10px;
   font-weight: 700;
-  background: #111111;
+  background: #1e2229;
   color: #ffffff;
   padding: 3px 8px;
   border-radius: 9999px;
@@ -232,7 +232,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  background-color: #111111;
+  background-color: #1e2229;
   color: #ffffff;
   border: none;
   font-size: 11.5px;
@@ -262,7 +262,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: #111111;
+  background: #1e2229;
   color: #ffffff;
   padding: 12px 18px;
   border-radius: 8px;
@@ -292,4 +292,124 @@ body {
 
 .page-section.active {
   display: block;
+}
+
+/* Credor Bank Top Right Action Icons & User Profile */
+.top-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-icon-circle-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.top-icon-circle-btn:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-strong);
+}
+
+.top-notification-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #f43f5e;
+  border: 1.5px solid #ffffff;
+}
+
+.top-user-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 3px 12px 3px 4px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.top-user-profile:hover {
+  border-color: var(--border-strong);
+  background-color: var(--bg-surface-subtle);
+}
+
+.top-user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #1e2229;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.top-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  min-width: 170px;
+  padding: 6px;
+  display: none;
+  z-index: 100;
+}
+
+.user-dropdown-menu.open {
+  display: block;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-main);
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+}
+
+.user-dropdown-item:hover {
+  background-color: var(--bg-surface-hover);
 }
