@@ -38,7 +38,6 @@ export function startWakeWatcher() {
 }
 
 export function showAuthScreen() {
-  if (state.isGuestMode) return; // Do not show if guest preview is enabled
   const authScreen = document.getElementById("authScreen");
   if (authScreen) authScreen.style.display = "flex";
 }
@@ -51,21 +50,29 @@ export function hideAuthScreen() {
 export function updateUserUI(user) {
   const userPill = document.getElementById("userPill");
   const logoutBtn = document.getElementById("logoutBtn");
+
   if (userPill) {
     if (state.isGuestMode) {
-      userPill.textContent = "Recruiter Preview ▾";
-      userPill.title = "Viewing in Guest / Recruiter Mode";
+      userPill.textContent = "Demo Client ▾";
+      userPill.title = "Viewing in Demo Client Mode. Click to sign in as Admin.";
+      userPill.onclick = () => showAuthScreen();
     } else {
       const displayName = user?.email || user?.name || "Admin";
       userPill.textContent = `${displayName} ▾`;
       userPill.title = `Signed in as ${user?.email || user?.name}`;
+      userPill.onclick = null;
     }
   }
+
   if (logoutBtn) {
     logoutBtn.style.display = "inline-flex";
+    const labelSpan = logoutBtn.querySelector("span");
+    if (labelSpan) {
+      labelSpan.textContent = state.isGuestMode ? "Admin Sign In" : "Logout";
+    }
+
     logoutBtn.onclick = async () => {
       if (state.isGuestMode) {
-        state.isGuestMode = false;
         showAuthScreen();
         return;
       }
@@ -140,19 +147,19 @@ export async function checkAuth() {
       updateUserUI(state.currentUser);
       return true;
     } else {
-      showAuthScreen();
-      return false;
+      enableGuestMode();
+      return true;
     }
   } catch (err) {
     hideWakingBanner();
-    console.warn("Auth check error, presenting auth overlay:", err);
-    showAuthScreen();
-    return false;
+    console.warn("Auth check error, activating demo client mode:", err);
+    enableGuestMode();
+    return true;
   }
 }
 
 /**
- * Enable Recruiter / Demo Preview Mode
+ * Enable Demo Client Mode
  */
 export function enableGuestMode() {
   state.isGuestMode = true;

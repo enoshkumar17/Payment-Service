@@ -2,6 +2,8 @@
  * PayPlatform Dashboard Configuration & Shared State
  */
 
+import { DEMO_MERCHANTS, DEMO_TRANSACTIONS } from "./demoData.js";
+
 // Production API Base URL (Render backend service)
 export const DEFAULT_API_BASE = "https://payment-service-pl7q.onrender.com";
 
@@ -16,6 +18,8 @@ export const state = {
   currentUser: null,
   isGuestMode: false,
   currentMerchantList: [],
+  demoMerchants: [...DEMO_MERCHANTS],
+  demoTransactions: [...DEMO_TRANSACTIONS],
   currentTxPage: 1,
   txLimit: 10,
   currentTxFilter: {

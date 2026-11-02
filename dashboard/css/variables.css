@@ -6,41 +6,41 @@
   /* Surfaces & Canvas (Pure single white everywhere) */
   --bg-main: #ffffff;
   --bg-surface: #ffffff;
-  --bg-surface-subtle: #f9f9f9;
-  --bg-surface-hover: #f5f5f5;
+  --bg-surface-subtle: #f9fafb;
+  --bg-surface-hover: #f3f4f6;
   --sidebar-bg: #ffffff;
   --sidebar-border: #f0f0f0;
   --sidebar-width: 236px;
 
-  /* Typography Colors */
+  /* Typography Colors - Credor Bank Solid Black Primary (No washed-out grey pencil shades) */
   --text-main: #111111;
-  --text-secondary: #404040;
-  --text-muted: #737373;
-  --text-light: #a3a3a3;
+  --text-secondary: #1f1f1f;
+  --text-muted: #374151;
+  --text-light: #4b5563;
   --text-inverse: #ffffff;
 
-  /* Borders (Whisper thin, non-intrusive) */
-  --border-color: #f0f0f0;
-  --border-strong: #e5e5e5;
+  /* Borders (Clean, whisper-thin, crisp) */
+  --border-color: #e5e5e5;
+  --border-strong: #d1d5db;
   --border-focus: #111111;
 
   /* Primary Accent: Solid Black */
   --primary: #111111;
   --primary-hover: #000000;
-  --primary-subtle: #f5f5f5;
+  --primary-subtle: #f3f4f6;
 
   /* Pastel Card Colors (Exact match to Credor Bank reference) */
   --card-lilac-bg: #fae8ff;
   --card-lilac-border: #f5d0fe;
-  --card-lilac-text: #86198f;
+  --card-lilac-text: #111111;
 
   --card-wheat-bg: #fef3c7;
   --card-wheat-border: #fde68a;
-  --card-wheat-text: #78350f;
+  --card-wheat-text: #111111;
 
   --card-sky-bg: #e0f2fe;
   --card-sky-border: #bae6fd;
-  --card-sky-text: #0369a1;
+  --card-sky-text: #111111;
 
   /* Status Colors */
   --success: #059669;
@@ -62,5 +62,5 @@
   /* Typography & Transitions */
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   --transition-fast: 0.15s ease;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
 }

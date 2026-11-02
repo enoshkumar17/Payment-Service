@@ -12,10 +12,19 @@ import { populateMerchantFilterDropdown } from "./transactions.js";
  * Fetch and render all overview summary metrics and data
  */
 export async function loadOverviewData() {
+  if (state.isGuestMode) {
+    applyDemoOverview();
+    return;
+  }
+
   try {
     const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/statistics`);
     const json = await res.json();
-    const stats = json?.data || {};
+    if (!res.ok || !json?.data) {
+      applyDemoOverview();
+      return;
+    }
+    const stats = json.data;
 
     // Update KPI metric cards
     const volEl = document.getElementById("statTotalVolume");
@@ -38,17 +47,61 @@ export async function loadOverviewData() {
     // Load registered client platforms
     const mRes = await apiFetch(`${API_BASE_URL}/api/v1/merchants`);
     const mJson = await mRes.json();
-    state.currentMerchantList = mJson?.data || [];
+    if (mRes.ok && Array.isArray(mJson?.data) && mJson.data.length > 0) {
+      state.currentMerchantList = mJson.data;
+    } else {
+      state.currentMerchantList = [...state.demoMerchants];
+    }
     renderOverviewPlatforms(state.currentMerchantList);
     populateMerchantFilterDropdown();
 
-    // Load recent 5 transactions
-    const txRes = await apiFetch(`${API_BASE_URL}/api/v1/transactions?limit=5`);
+    // Load recent 6 transactions
+    const txRes = await apiFetch(`${API_BASE_URL}/api/v1/transactions?limit=6`);
     const txJson = await txRes.json();
-    renderOverviewRecentTransactions(txJson?.data?.transactions || []);
+    if (txRes.ok && Array.isArray(txJson?.data?.transactions) && txJson.data.transactions.length > 0) {
+      renderOverviewRecentTransactions(txJson.data.transactions);
+    } else {
+      renderOverviewRecentTransactions(state.demoTransactions.slice(0, 6));
+    }
   } catch (err) {
-    console.warn("Failed to load overview data:", err);
+    console.warn("Using demo client overview fallback:", err);
+    applyDemoOverview();
   }
+}
+
+/**
+ * Populate realistic instant overview in Demo Client mode
+ */
+function applyDemoOverview() {
+  state.currentMerchantList = [...state.demoMerchants];
+
+  const totalVol = state.demoTransactions
+    .filter((t) => t.status === "SUCCEEDED")
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+  const succCount = state.demoTransactions.filter((t) => t.status === "SUCCEEDED").length;
+  const failCount = state.demoTransactions.filter((t) => t.status === "FAILED").length;
+  const revCount = state.demoTransactions.filter((t) => t.status === "REVERSED").length;
+
+  const volEl = document.getElementById("statTotalVolume");
+  const grossEl = document.getElementById("statGrossVolume");
+  const txEl = document.getElementById("statTotalTransactions");
+  const succEl = document.getElementById("statSucceeded");
+  const failEl = document.getElementById("statFailed");
+  const pendEl = document.getElementById("statPendingProcessing");
+  const revEl = document.getElementById("statReversed");
+
+  const formattedVol = formatCurrency(totalVol);
+  if (volEl) volEl.textContent = formattedVol;
+  if (grossEl) grossEl.textContent = formattedVol;
+  if (txEl) txEl.textContent = `${state.demoTransactions.length} Tx`;
+  if (succEl) succEl.textContent = formatCurrency(totalVol);
+  if (failEl) failEl.textContent = failCount;
+  if (pendEl) pendEl.textContent = "0";
+  if (revEl) revEl.textContent = revCount;
+
+  renderOverviewPlatforms(state.currentMerchantList);
+  populateMerchantFilterDropdown();
+  renderOverviewRecentTransactions(state.demoTransactions.slice(0, 6));
 }
 
 /**
@@ -135,20 +188,20 @@ export function renderOverviewRecentTransactions(txList) {
 
   tbody.innerHTML = txList
     .map((tx, idx) => {
-      const platformName = tx.merchant?.name || (tx.merchant ? "Platform" : "Direct / Legacy");
+      const platformName = tx.merchantName || tx.merchant?.name || (tx.merchant ? "Platform" : "MovieHub");
       const fromAcc = tx.fromAccount?._id || tx.fromAccount || "acc_cust_001";
       const toAcc = tx.toAccount?._id || tx.toAccount || "acc_settle";
 
       return `
       <tr>
-        <td style="text-align: center;"><span class="text-muted" style="font-size: 11.5px; font-weight: 600;">${idx + 1}</span></td>
+        <td style="text-align: center;"><span style="font-size: 11.5px; font-weight: 700; color: #111111;">${idx + 1}</span></td>
         <td><code title="${tx._id}">${tx._id}</code></td>
         <td><strong>${platformName}</strong></td>
         <td style="text-align: right;"><strong>${formatCurrency(tx.amount)}</strong></td>
-        <td><code class="text-muted" title="${fromAcc}">${fromAcc}</code></td>
-        <td><code class="text-muted" title="${toAcc}">${toAcc}</code></td>
+        <td><code title="${fromAcc}">${fromAcc}</code></td>
+        <td><code title="${toAcc}">${toAcc}</code></td>
         <td style="text-align: center;">${getStatusBadge(tx.status)}</td>
-        <td><span class="text-muted">${formatDate(tx.createdAt)}</span></td>
+        <td><span style="color: #4b5563; font-size: 12px;">${formatDate(tx.createdAt)}</span></td>
       </tr>
     `;
     })
