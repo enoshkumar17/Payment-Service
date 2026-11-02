@@ -799,8 +799,8 @@ function verifyWebhook(payload, signature, secret) {
       <div class="modal-body">
         <p style="font-size: 13px; color: #737373; margin-bottom: 12px;">This permanently removes this merchant because it has 0 transactions.</p>
         <div class="form-group">
-          <label>Type <strong id="deleteConfirmMatchTarget"></strong> to confirm:</label>
-          <input type="text" id="deleteConfirmInput" class="form-input" />
+          <label>Type <strong id="deleteConfirmMatchTarget">delete</strong> to confirm:</label>
+          <input type="text" id="deleteConfirmInput" class="form-input" placeholder='Type "delete" or platform name' />
         </div>
       </div>
       <div class="modal-footer">

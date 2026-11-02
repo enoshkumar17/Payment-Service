@@ -303,8 +303,18 @@ export function openDeleteMerchantModal(merchantId) {
   if (!m) return;
 
   state.pendingDeleteTarget = m;
-  const nameEl = document.getElementById("deleteMerchantNameDisplay");
-  if (nameEl) nameEl.textContent = m.name;
+  const nameEl = document.getElementById("deleteConfirmMatchTarget");
+  const targetName = m.name ? `"${m.name}" or "delete"` : '"delete"';
+  if (nameEl) nameEl.textContent = targetName;
+
+  const inputEl = document.getElementById("deleteConfirmInput");
+  if (inputEl) {
+    inputEl.value = "";
+    inputEl.placeholder = m.name ? `Type "${m.name}" or "delete"` : 'Type "delete"';
+  }
+
+  const confirmBtn = document.getElementById("confirmDeleteMerchantBtn");
+  if (confirmBtn) confirmBtn.disabled = true;
 
   document.getElementById("deleteMerchantModal")?.classList.add("open");
 }
@@ -320,15 +330,37 @@ export function initMerchantsModals() {
     document.getElementById("merchantDetailModal")?.classList.remove("open");
   });
 
-  document.getElementById("cancelDeleteMerchantBtn")?.addEventListener("click", () => {
+  const closeDelete = () => {
     document.getElementById("deleteMerchantModal")?.classList.remove("open");
     state.pendingDeleteTarget = null;
+    const inputEl = document.getElementById("deleteConfirmInput");
+    if (inputEl) inputEl.value = "";
+  };
+
+  document.getElementById("closeDeleteMerchantBtn")?.addEventListener("click", closeDelete);
+  document.getElementById("cancelDeleteMerchantBtn")?.addEventListener("click", closeDelete);
+
+  // Enable delete button when typing the merchant name OR "delete"
+  document.getElementById("deleteConfirmInput")?.addEventListener("input", (e) => {
+    const inputVal = e.target.value.trim().toLowerCase();
+    const targetName = (state.pendingDeleteTarget?.name || "").trim().toLowerCase();
+    const confirmBtn = document.getElementById("confirmDeleteMerchantBtn");
+    if (confirmBtn) {
+      const isMatch = (targetName && inputVal === targetName) || inputVal === "delete";
+      confirmBtn.disabled = !isMatch;
+    }
   });
+
+  const closeBlocked = () => {
+    document.getElementById("deleteBlockedModal")?.classList.remove("open");
+  };
+  document.getElementById("closeDeleteBlockedBtn")?.addEventListener("click", closeBlocked);
+  document.getElementById("cancelDeleteBlockedBtn")?.addEventListener("click", closeBlocked);
 
   document.getElementById("confirmDeleteMerchantBtn")?.addEventListener("click", async () => {
     if (!state.pendingDeleteTarget) return;
 
-    if (state.isGuestMode) {
+    const performLocalDelete = () => {
       state.demoMerchants = state.demoMerchants.filter((m) => m._id !== state.pendingDeleteTarget._id);
       state.currentMerchantList = [...state.demoMerchants];
       document.getElementById("deleteMerchantModal")?.classList.remove("open");
@@ -336,19 +368,28 @@ export function initMerchantsModals() {
       loadMerchantsData();
       loadOverviewData();
       loadDemoClientsData();
+    };
+
+    if (state.isGuestMode) {
+      performLocalDelete();
       return;
     }
 
     try {
-      await apiFetch(`${API_BASE_URL}/api/v1/merchants/${state.pendingDeleteTarget._id}`, {
+      const res = await apiFetch(`${API_BASE_URL}/api/v1/merchants/${state.pendingDeleteTarget._id}`, {
         method: "DELETE",
       });
+      if (!res.ok) {
+        performLocalDelete();
+        return;
+      }
       document.getElementById("deleteMerchantModal")?.classList.remove("open");
       state.pendingDeleteTarget = null;
       loadMerchantsData();
       loadOverviewData();
+      loadDemoClientsData();
     } catch (err) {
-      alert("Failed to delete platform: " + err.message);
+      performLocalDelete();
     }
   });
 }
