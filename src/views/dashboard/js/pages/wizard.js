@@ -3,10 +3,11 @@
  * 4-step guided modal for registering a new client platform and issuing an API key.
  */
 
-import { API_BASE_URL } from "../config.js";
+import { API_BASE_URL, state } from "../config.js";
 import { apiFetch } from "../api.js";
 import { loadMerchantsData } from "./merchants.js";
 import { loadOverviewData } from "./overview.js";
+import { loadDemoClientsData } from "./simulator.js";
 
 export function initWizard() {
   const createModal = document.getElementById("createMerchantModal");
@@ -310,9 +311,9 @@ export function initWizard() {
       if (keyDisplay) keyDisplay.textContent = rawKey;
       if (successPanel) successPanel.classList.add("active");
 
-      loadMerchantsData();
-      loadOverviewData();
-      loadDemoClientsData();
+      if (typeof loadMerchantsData === "function") loadMerchantsData();
+      if (typeof loadOverviewData === "function") loadOverviewData();
+      if (typeof loadDemoClientsData === "function") loadDemoClientsData();
     };
 
     const generateLocalMerchant = () => {

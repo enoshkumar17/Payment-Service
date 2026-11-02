@@ -108,16 +108,16 @@ export function renderTransactionsTable(txList) {
 
       return `
       <tr>
-        <td><code class="tx-id-pill" title="${tx._id}">${tx._id}</code></td>
-        <td class="tx-platform-col"><strong>${platformName}</strong></td>
-        <td class="tx-amount-col"><strong>${formatCurrency(tx.amount)}</strong></td>
-        <td><code class="account-pill" title="${fromAcc}">${fromAcc}</code></td>
-        <td><code class="account-pill" title="${toAcc}">${toAcc}</code></td>
+        <td><span class="tx-id-text" title="${tx._id}">${tx._id}</span></td>
+        <td class="tx-platform-col">${platformName}</td>
+        <td class="tx-amount-col">${formatCurrency(tx.amount)}</td>
+        <td><span class="account-text" title="${fromAcc}">${fromAcc}</span></td>
+        <td><span class="account-text" title="${toAcc}">${toAcc}</span></td>
         <td style="text-align: center;">${getStatusBadge(tx.status)}</td>
         <td class="tx-date-col">${formatDate(tx.createdAt)}</td>
-        <td><code class="idempotency-pill" title="${tx.idempotencyKey || "N/A"}">${tx.idempotencyKey || "N/A"}</code></td>
+        <td><span class="idempotency-text" title="${tx.idempotencyKey || "N/A"}">${tx.idempotencyKey || "N/A"}</span></td>
         <td style="text-align: center;">
-          <button class="btn btn-xs btn-inspect" onclick="window.viewTxDetails('${tx._id}')">
+          <button class="btn-inspect" onclick="window.viewTxDetails('${tx._id}')">
             Inspect
           </button>
         </td>
