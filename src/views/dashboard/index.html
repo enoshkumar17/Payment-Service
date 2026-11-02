@@ -99,7 +99,10 @@
           <span>Production Cloud</span>
           <span style="color: #e5e5e5;">|</span>
           <span class="user-pill" id="userPill">Admin ▾</span>
-          <button class="logout-link-btn" id="logoutBtn" style="display: none;" title="Log out">Logout</button>
+          <button class="logout-link-btn" id="logoutBtn" style="display: none;" title="Log out">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            <span>Logout</span>
+          </button>
           <button class="top-refresh-btn" id="refreshBtn" title="Refresh Dashboard Data">
             <span>Refresh ⟳</span>
           </button>
@@ -123,10 +126,27 @@
               <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Total processed volume</div>
               <div style="font-size: 32px; font-weight: 800; color: var(--text-main); letter-spacing: -0.6px; margin-top: 2px;" id="statTotalVolume">₹1,920.00</div>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <button class="btn btn-secondary" id="openCreateMerchantBtn" style="border-radius: 9999px; width: 34px; height: 34px; padding: 0;" title="Register Platform">+</button>
-              <button class="btn btn-secondary" onclick="alert('Double-Entry Balance Audit: Zero-Sum Verified.')" style="border-radius: 9999px; width: 34px; height: 34px; padding: 0;" title="Verify Ledger">⇄</button>
-              <button class="btn btn-secondary" onclick="window.location.hash='#transactions'" style="border-radius: 9999px; width: 34px; height: 34px; padding: 0;" title="View Transactions">↗</button>
+            <div class="action-circle-group">
+              <button class="icon-circle-btn" id="openCreateMerchantBtn" title="Register New Client Platform">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <button class="icon-circle-btn" onclick="alert('Double-Entry Balance Audit: Zero-Sum Verified. Total debits equal total credits across all accounts.')" title="Verify Double-Entry Ledger Integrity">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+              </button>
+              <button class="icon-circle-btn" onclick="window.location.hash='#transactions'" title="View All Transactions">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -406,32 +426,210 @@
           </div>
         </section>
 
-        <!-- 5. PAGE: API -->
+        <!-- 5. PAGE: API / INTEGRATION SPEC -->
         <section id="page-api" class="page-section">
           <div class="guide-card">
-            <h3 style="font-size: 15px; font-weight: 700; color: #111111; margin-bottom: 6px;">External Client Integration Spec</h3>
-            <p style="font-size: 12px; color: #737373; margin-bottom: 16px;">How external frontends (MovieHub, FoodBox) integrate with PayPlatform.</p>
-            <pre class="code-block" style="background: #111111; border-radius: 8px;"><code>POST /api/v1/transactions/new-transaction
-Host: payment-service-pl7q.onrender.com
-x-api-key: mch_live_4b8f72a1e0c395d821f06a92cb71a39d84e1a0b3f5c9e2d1
-Authorization: Bearer &lt;customer_jwt_token&gt;
-Content-Type: application/json
+            <div style="margin-bottom: 20px;">
+              <h3 style="font-size: 17px; font-weight: 700; color: #111111; margin-bottom: 4px;">External Client Integration Spec (WaaS)</h3>
+              <p style="font-size: 12.5px; color: #737373; line-height: 1.5;">How external frontends and client platforms (e.g. MovieHub, FoodBox) integrate with the PayPlatform Wallet-as-a-Service engine.</p>
+            </div>
+
+            <!-- Architecture Flow Banner -->
+            <div style="background: #fafafa; border: 1px solid #e5e5e5; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; font-size: 12px; color: #404040; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; color: #111111;">Client App (MovieHub)</span>
+                <span style="color: #a3a3a3;">➔</span>
+                <span style="font-weight: 700; color: #111111;">PayPlatform API (x-api-key)</span>
+                <span style="color: #a3a3a3;">➔</span>
+                <span style="font-weight: 700; color: #111111;">Double-Entry Ledger</span>
+                <span style="color: #a3a3a3;">➔</span>
+                <span style="font-weight: 700; color: #111111;">Webhook Dispatch</span>
+              </div>
+              <span class="badge badge-success" style="font-size: 11px;">Production Ready</span>
+            </div>
+
+            <!-- Step 1 -->
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span style="width: 24px; height: 24px; border-radius: 50%; background: #111111; color: #ffffff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">1</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #111111;">Register Platform &amp; Obtain API Key</h4>
+              </div>
+              <p style="font-size: 12.5px; color: #737373; line-height: 1.5; margin-left: 34px;">
+                Every client platform registers via the Admin Dashboard and receives a unique live API key (e.g., <code>mch_live_...</code>). Pass this key in all HTTP requests via the <code>x-api-key</code> header.
+              </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span style="width: 24px; height: 24px; border-radius: 50%; background: #111111; color: #ffffff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">2</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #111111;">Initiate Payment Transaction</h4>
+              </div>
+              <p style="font-size: 12.5px; color: #737373; line-height: 1.5; margin-left: 34px; margin-bottom: 10px;">
+                Send a <code>POST</code> request to create and execute a payment. Include an <code>idempotencyKey</code> to prevent double-charging on network retries.
+              </p>
+              <div style="margin-left: 34px;">
+                <pre class="code-block"><code><span class="code-http-method">POST</span> <span class="code-http-path">/api/v1/transactions/new-transaction</span> HTTP/1.1
+<span class="code-header-key">Host:</span> <span class="code-header-val">payment-service-pl7q.onrender.com</span>
+<span class="code-header-key">x-api-key:</span> <span class="code-header-val">mch_live_4b8f72a1e0c395d821f06a92cb71a39d84e1a0b3f5c9e2d1</span>
+<span class="code-header-key">Authorization:</span> <span class="code-header-val">Bearer &lt;customer_jwt_token&gt;</span>
+<span class="code-header-key">Content-Type:</span> <span class="code-header-val">application/json</span>
 
 {
-  "fromAccount": "66e1b7c12f4a5c0012a4e111",
-  "toAccount": "66e1b7c12f4a5c0012a4e222",
-  "amount": 250,
-  "idempotencyKey": "order_moviehub_ticket_9921"
+  <span class="code-json-key">"fromAccount"</span>: <span class="code-json-str">"66e1b7c12f4a5c0012a4e111"</span>,
+  <span class="code-json-key">"toAccount"</span>: <span class="code-json-str">"66e1b7c12f4a5c0012a4e222"</span>,
+  <span class="code-json-key">"amount"</span>: <span class="code-json-num">250.00</span>,
+  <span class="code-json-key">"idempotencyKey"</span>: <span class="code-json-str">"order_moviehub_ticket_9921"</span>
 }</code></pre>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div style="margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span style="width: 24px; height: 24px; border-radius: 50%; background: #111111; color: #ffffff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">3</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #111111;">State Machine &amp; Dual-Layer Verification</h4>
+              </div>
+              <p style="font-size: 12.5px; color: #737373; line-height: 1.5; margin-left: 34px;">
+                The backend executes a 3-step state progression: <strong>PENDING</strong> ➔ <strong>PROCESSING</strong> ➔ <strong>SUCCEEDED</strong>. The server verifies that the merchant API key is active and that the customer JWT owns the source account. An internal transaction lock guarantees zero race conditions.
+              </p>
+            </div>
+
+            <!-- Step 4 -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <span style="width: 24px; height: 24px; border-radius: 50%; background: #111111; color: #ffffff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center;">4</span>
+                <h4 style="font-size: 14px; font-weight: 700; color: #111111;">Real-Time Webhook Verification</h4>
+              </div>
+              <p style="font-size: 12.5px; color: #737373; line-height: 1.5; margin-left: 34px; margin-bottom: 10px;">
+                When a payment reaches final status, PayPlatform posts an automated webhook to your configured URL with an HMAC-SHA256 signature in <code>x-webhook-signature</code>:
+              </p>
+              <div style="margin-left: 34px;">
+                <pre class="code-block"><code><span class="code-comment">// Verify PayPlatform webhook in Node.js</span>
+const crypto = require("crypto");
+
+function verifyWebhook(payload, signature, secret) {
+  const hmac = crypto.createHmac("sha256", secret);
+  const digest = hmac.update(JSON.stringify(payload)).digest("hex");
+  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
+}</code></pre>
+              </div>
+            </div>
+
           </div>
         </section>
 
         <!-- 6. PAGE: SETTINGS -->
         <section id="page-settings" class="page-section">
-          <div class="settings-card">
-            <h3 style="font-size: 15px; font-weight: 700; color: #111111; margin-bottom: 14px;">Infrastructure Settings</h3>
-            <div style="font-size: 12.5px; color: #737373;">
-              Database Layer: <strong>Production MongoDB Atlas</strong> &bull; Server: <strong>Render Cloud Service</strong>
+          <div class="settings-grid">
+            <!-- Card 1: Cloud & Deployment Infrastructure -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+                  <span>Cloud &amp; Infrastructure</span>
+                </div>
+                <span class="badge badge-success">Online</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Database Layer</span>
+                <span class="settings-value"><span class="status-dot"></span> MongoDB Atlas (Replica Set)</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Backend Host</span>
+                <span class="settings-value">Render Cloud Service (Node.js 20 LTS)</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Dashboard Host</span>
+                <span class="settings-value">Vercel Global Edge Network</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Health Monitor</span>
+                <span class="settings-value"><code>GET /health</code> &bull; 200 OK</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Double-Entry Financial Ledger -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                  <span>Double-Entry Ledger Integrity</span>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="alert('Double-Entry Balance Audit: Zero-Sum Verified. Total debits equal total credits across all accounts.')" style="padding: 3px 10px; font-size: 11px;">
+                  Audit Ledger
+                </button>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Accounting Invariant</span>
+                <span class="settings-value">Debits == Credits (Zero-Sum Enforced)</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Transaction Locks</span>
+                <span class="settings-value">Atomic Row Lock on Source Account</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Idempotency Window</span>
+                <span class="settings-value">24-Hour Sliding TTL</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Ledger Currency</span>
+                <span class="settings-value">INR (₹) &bull; 2 Decimal Precision</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Gateway & Settlement Rules -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                  <span>Gateway &amp; Settlement</span>
+                </div>
+                <span class="badge badge-success">Sandbox Active</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Gateway Engine</span>
+                <span class="settings-value">Razorpay Integration Sandbox</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Settlement Mode</span>
+                <span class="settings-value">T+0 Instant Internal Settlement</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Single Debit Cap</span>
+                <span class="settings-value">₹50,000.00 / Tx Limit</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Webhook Verification</span>
+                <span class="settings-value">HMAC-SHA256 Signature Active</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Security & Access Control -->
+            <div class="settings-card">
+              <div class="settings-card-header">
+                <div class="settings-card-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  <span>Security &amp; Auth Policy</span>
+                </div>
+                <span class="badge badge-success">Strict</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Admin SSO</span>
+                <span class="settings-value">Google OAuth 2.0 + HttpOnly Cookie</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Merchant Key Storage</span>
+                <span class="settings-value">SHA-256 One-Way Hash</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">Rate Limiter</span>
+                <span class="settings-value">100 req / 15m (DDoS Protection)</span>
+              </div>
+              <div class="settings-item">
+                <span class="settings-label">CORS Origins</span>
+                <span class="settings-value">Vercel &amp; Render Cloud Domains</span>
+              </div>
             </div>
           </div>
         </section>

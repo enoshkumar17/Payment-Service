@@ -62,7 +62,7 @@ export function updateUserUI(user) {
     }
   }
   if (logoutBtn) {
-    logoutBtn.style.display = "inline-block";
+    logoutBtn.style.display = "inline-flex";
     logoutBtn.onclick = async () => {
       if (state.isGuestMode) {
         state.isGuestMode = false;
