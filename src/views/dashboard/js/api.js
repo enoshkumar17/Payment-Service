@@ -67,23 +67,23 @@ export function updateUserUI(user) {
   }
 
   if (state.isGuestMode) {
-    if (avatarEl) avatarEl.textContent = "EK";
-    if (nameEl) nameEl.textContent = "Enosh K.";
+    if (avatarEl) avatarEl.textContent = "DU";
+    if (nameEl) nameEl.textContent = "Demo User";
     if (logoutLabel) logoutLabel.textContent = "Admin Sign In";
   } else if (user) {
-    const displayName = user.name || (user.email ? user.email.split("@")[0] : "Enosh K.");
+    const displayName = user.name || (user.email ? user.email.split("@")[0] : "Admin User");
     const initials = displayName
       .split(" ")
       .map((n) => n[0])
       .join("")
       .toUpperCase()
-      .slice(0, 2) || "EK";
+      .slice(0, 2) || "AD";
     if (avatarEl) avatarEl.textContent = initials;
     if (nameEl) nameEl.textContent = displayName;
     if (logoutLabel) logoutLabel.textContent = "Logout";
   } else {
-    if (avatarEl) avatarEl.textContent = "EK";
-    if (nameEl) nameEl.textContent = "Enosh K.";
+    if (avatarEl) avatarEl.textContent = "DU";
+    if (nameEl) nameEl.textContent = "Demo User";
     if (logoutLabel) logoutLabel.textContent = "Admin Sign In";
   }
 
